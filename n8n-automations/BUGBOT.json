@@ -1,0 +1,2557 @@
+{
+  "name": "BUGBOT",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $node['Autenticação'].json['urlAPI'] }}/apirest.php/initSession",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "App-Token",
+              "value": "={{ $json.APP_TOKEN_GLPI }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"login\": \"{{ $json.Login_GLPI }}\",\n  \"password\": \"{{ $json.Senha_GLPI }}\"\n}",
+        "options": {}
+      },
+      "id": "f9373105-459e-4f4e-89e5-0b4f8ac3d467",
+      "name": "Auth (BugBusters)1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1024,
+        1392
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s-tok",
+              "name": "sessionToken",
+              "value": "={{ $json.session_token }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "38df3d40-1949-4978-a7f2-a2edd8c9a6f1",
+      "name": "Preparador de dados",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -816,
+        1392
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f07fb8a3-0bff-487e-83df-bcf3bc21a061",
+              "name": "urlAPI",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "tok",
+              "name": "APP_TOKEN_GLPI",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "log",
+              "name": "Login_GLPI",
+              "value": "diego.teixeira",
+              "type": "string"
+            },
+            {
+              "id": "pwd",
+              "name": "Senha_GLPI",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "1459ebb6-1228-4a5a-9cd2-2c797313c9f9",
+              "name": "Status",
+              "value": "10",
+              "type": "string"
+            },
+            {
+              "id": "469a8049-34c5-4700-bc3b-92bc32737d0c",
+              "name": "NomeDaInstanciaEvolution",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "b0482920-8593-4023-9235-a8048e070b5c",
+              "name": "linkEvolution",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "bf5d4057-abe9-475f-9491-110aa89dc92f",
+              "name": "APIKeyEvolution",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "05b50785-8eae-4b93-a7e6-af9ad621a929",
+      "name": "Autenticação",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1232,
+        1392
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0b684347-8ab9-424a-9c8c-f97f7709040a",
+              "name": "Nome",
+              "value": "={{ $json.body.data.pushName }}",
+              "type": "string"
+            },
+            {
+              "id": "0d5feb44-6ad5-46ba-82b7-9117df606447",
+              "name": "Telefone",
+              "value": "={{ $json.body.data.key.remoteJid }}",
+              "type": "string"
+            },
+            {
+              "id": "21fa186f-35c2-45e8-ba47-15ff247f03ce",
+              "name": "Mensagem",
+              "value": "={{ $json.body.data.message.conversation }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1872,
+        1408
+      ],
+      "id": "e330cb5f-a587-48cd-bbb5-383a6593bf42",
+      "name": "Dados da mensagem"
+    },
+    {
+      "parameters": {
+        "jsCode": "const Nome = $input.first().json.Nome;\nconst telefoneCompleto = $input.first().json.Telefone;\nconst Mensagem = $input.first().json.Mensagem;\n\n// 1. Divide a string no caractere '@'\nlet partes = telefoneCompleto.split('@'); \n\n// 2. Pega o primeiro elemento do array (a parte numérica)\nlet telefoneConvertido = partes[0];\n\nreturn [\n  {\n    json: {\n      nome: Nome,\n      telefone: telefoneConvertido,\n      mensagem: Mensagem\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1648,
+        1408
+      ],
+      "id": "88a77bfb-adf7-4587-9983-4aabdcaf6c23",
+      "name": "Dados da mensagem formatados",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7c54c215-280e-4cb4-8d8a-a12a6997f285",
+              "leftValue": "={{ $json.telefone }}",
+              "rightValue": "5511946030661",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1472,
+        1408
+      ],
+      "id": "1654b505-a773-4fd2-927f-c6554a36ec35",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "d6e7c929-eeea-49a7-9d2b-b5ecccef2724",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2096,
+        1408
+      ],
+      "id": "c3b55cc1-dd40-4794-9345-4b3f8489c59c",
+      "name": "Webhook",
+      "webhookId": "d6e7c929-eeea-49a7-9d2b-b5ecccef2724"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -1440,
+        1680
+      ],
+      "id": "2fbb6ea4-ecc3-4c22-879c-c5e26e94644a",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $node[\"Dados da mensagem formatados\"].json[\"mensagem\"] }}",
+        "options": {
+          "systemMessage": "=Você é o motor de IA de suporte Nível 1 da Bugbusters.\n\nREGRA DE OURO: SAÍDA EXCLUSIVA EM UM ÚNICO OBJETO JSON EM UMA ÚNICA LINHA. É terminantemente proibido repetir o JSON, adicionar comentários ou qualquer texto fora das chaves {}. Não use Markdown (```json).\n\n1. FLUXO DE TRIAGEM (LINEAR E OBRIGATÓRIO)\nIdentificação: Peça o e-mail primeiro. Se for e-mail pessoal (@gmail, @live, etc), peça o nome da empresa.\n\nTrava de Unidade Seletiva: Você SÓ deve perguntar a unidade se a empresa identificada for: SOLAIA, PILLOWTEX, JAMAICA ou ROA. Para qualquer outra empresa, avance direto para o problema.\n\nInvestigação Técnica: Assim que o usuário relatar o problema, você deve obrigatoriamente fazer estas perguntas antes de encerrar:\n\n\"Isso afeta apenas você ou mais alguém na unidade?\"\n\n\"Aparece alguma mensagem de erro ou código específico na tela?\"\n\nSe o problema for lentidão: Pergunte se ocorre no Hardware ou na Conectividade.\n\nNão ofereça suporte: Não peça para o usuário realizar testes técnicos complexos. Seu objetivo é coletar dados.\n\n2. REGRAS DE STATUS\n\"responder\": Enquanto estiver coletando e-mail, empresa, unidade ou fazendo as perguntas de triagem.\n\n\"verificar-conta\": Mude para este status IMEDIATAMENTE após o usuário responder às perguntas de triagem (escopo e erro). Este é o gatilho de fechamento do chamado.\n\n\"consultar-chamado\": Se o usuário solicitar status de tickets existentes.\n\n3. IDs E REFERÊNCIAS\nUtilize a lista de IDs: {{ $json.lista_empresas }}.\n\nPara as unidades críticas: SOLAIA (59, 58, 65), PILLOWTEX (8, 9), JAMAICA (54, 55), ROA (38, 39).\n\n4. FECHAMENTO (verificar-conta)\nconteudoDaMenssagem: Texto curto e profissional informando o registro. Ex: \"Chamado registrado. Nossa equipe técnica entrará em contato em breve.\"\n\ncaso (HTML): Obrigatório quando o status for verificar-conta. Use o formato: <b>Sintoma:</b> [relato]; <br><b>Escopo:</b> [quem afeta]; <br><b>Ações:</b> [perguntas feitas]; <br><b>Sugestões Técnicas:</b> [Termos para especialistas: Spooler, DHCP, DNS, etc]. <br><b>Contato:</b> Telefone: {{ $node[\"Dados da mensagem formatados\"].json[\"telefone\"] }} | E-mail: [e-mail coletado].\n\n5. FORMATO DE SAÍDA (STRICT JSON)\n{\"tipoDeMensagem\":\"string\",\"empresa\":ID_NUMERICO|null,\"conteudoDaMenssagem\":\"string\",\"email\":\"string\"|null,\"caso\":\"string\"|null}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        112,
+        1392
+      ],
+      "id": "caa9548d-61f3-4b79-acc0-3d677eaf81b2",
+      "name": "AI Agent",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9707f11c-613e-4b06-92c1-5a708205c354",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        1392
+      ],
+      "id": "f2fb2c9c-68e2-4d31-bfcd-fa9c0497c0a7",
+      "name": "Conversão para json",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $node['Autenticação'].json['urlAPI'] }}/apirest.php/ITILCategory?range=0-999&is_recursive=true",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "range",
+              "value": "0-999"
+            },
+            {
+              "name": "is_recursive",
+              "value": "1"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "App-Token",
+              "value": "={{ $(\"Autenticação\").first().json.APP_TOKEN_GLPI }}"
+            },
+            {
+              "name": "Session-Token",
+              "value": "={{ $(\"Auth (BugBusters)1\").first().json.session_token }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "11c39ac0-72af-4113-b922-27f14fee5718",
+      "name": "GLPI ITILCategory1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4128,
+        1264
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Acessa os dados dos nós anteriores\nconst activeEntitiesNode = $('Get Active Entities').first();\nconst allEntitiesNodes = $('Get All Entities').all();\n\n// 2. Extrai a entidade atual com segurança\nconst sessionData = activeEntitiesNode.json.active_entity || {};\nconst activeIds = sessionData.active_entities || [];\n\n// 3. Mapeia os nomes das entidades\nconst nameMap = {};\nfor (const item of allEntitiesNodes) {\n    const e = item.json;\n    if (e && e.id !== undefined) {\n        nameMap[e.id] = e.completename || e.name;\n    }\n}\n\n// 4. Monta a lista de empresas como uma string formatada\nconst listaTexto = activeIds\n    .map(ent => `${ent.id} - ${nameMap[ent.id] || 'Entidade ' + ent.id}`)\n    .join('\\n');\n\n// 5. Retorna um objeto limpo para o prompt\nreturn [{\n    json: {\n        current_entity_name: nameMap[sessionData.id] || \"Raiz\",\n        lista_empresas: listaTexto || \"Nenhuma empresa encontrada\"\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        1392
+      ],
+      "id": "1eeb5654-8189-4621-b4a7-af4de5259720",
+      "name": "Code in JavaScript",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $node['Autenticação'].json['urlAPI'] }}/apirest.php/getActiveEntities",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "App-Token",
+              "value": "={{ $(\"Autenticação\").first().json.APP_TOKEN_GLPI }}"
+            },
+            {
+              "name": "Session-Token",
+              "value": "={{ $(\"Auth (BugBusters)1\").first().json.session_token }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "05f99a17-6df6-4056-9b0c-d1b16ba2179b",
+      "name": "Get Active Entities",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -592,
+        1392
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $node['Autenticação'].json['urlAPI'] }}/apirest.php/Entity?range=0-999",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "App-Token",
+              "value": "={{ $(\"Autenticação\").first().json.APP_TOKEN_GLPI }}"
+            },
+            {
+              "name": "Session-Token",
+              "value": "={{ $(\"Auth (BugBusters)1\").first().json.session_token }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "f9284b62-47f3-4cde-8f90-752442cdf692",
+      "name": "Get All Entities",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -368,
+        1392
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e0899604-66cc-43cc-a9d1-468b0904ca07",
+              "leftValue": "={{ $json.output.tipoDeMensagem }}",
+              "rightValue": "responder",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        688,
+        1392
+      ],
+      "id": "a83f2828-cf07-4140-8f3d-90edd9a14984",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $node['Autenticação'].json['urlAPI'] }}/apirest.php/initSession ",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "App-Token",
+              "value": "={{ $json.APP_TOKEN_GLPI }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"login\": \"{{ $json.Login_GLPI }}\",\n  \"password\": \"{{ $json.Senha_GLPI }}\"\n}",
+        "options": {}
+      },
+      "id": "c9003259-dc20-46c5-bbab-ef0c53167bd6",
+      "name": "Auth (BugBusters)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1632,
+        1408
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Criamos objetos vazios para acumular os dados de todas as execuções\nlet allData = {};\nlet allDataHtml = {};\nlet totalCountGeral = 0;\n\n// O segredo está aqui: percorrer TODOS os itens que entraram no nó\n// Cada 'item' representa a resposta de um status diferente (Novo, Atribuído, etc)\nfor (const item of $input.all()) {\n  const payload = item.json;\n\n  // Somamos o contador total\n  totalCountGeral += parseInt(payload.totalcount || 0);\n\n  // Mesclamos os objetos de tickets (data) usando o ID como chave única\n  if (payload.data) {\n    Object.assign(allData, payload.data);\n  }\n\n  // Mesclamos os objetos de HTML (data_html)\n  if (payload.data_html) {\n    Object.assign(allDataHtml, payload.data_html);\n  }\n}\n\n// Retornamos um único item contendo TUDO consolidado\nreturn {\n  totalcount: totalCountGeral,\n  data: allData,\n  data_html: allDataHtml\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2528,
+        1408
+      ],
+      "id": "7f431a2e-579e-4f31-970c-b4a316223e94",
+      "name": "Iterador de todos os status de chamado1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Autenticação1').item.json.URLAUXILIAR }}/apirest.php/search/Ticket?range=0-9999&withindexes=true&giveItems=true&criteria[0][field]=23&criteria[0][searchtype]=equals&criteria[0][value]=0&criteria[1][link]=AND&criteria[1][field]=12&criteria[1][searchtype]=equals&criteria[1][value]={{ $json.statusToSearch }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "App-Token",
+              "value": "={{ $('Autenticação1').item.json.APP_TOKEN_GLPI }}"
+            },
+            {
+              "name": "Session-Token",
+              "value": "={{ $('Auth (BugBusters)').item.json.session_token }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "7033ef6c-4a98-47cd-b54a-6961682a88e5",
+      "name": "GLPI Search2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2320,
+        1408
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "statusToSearch",
+        "options": {}
+      },
+      "id": "891ddb73-95d6-4bd5-b337-b5970114e64e",
+      "name": "Organizador de status1",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        2096,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s-list",
+              "name": "statusToSearch",
+              "value": "={{ $node[\"Autenticação1\"].json[\"Status\"] === '10' ? [1,2,3,4] : ($node[\"Autenticação1\"].json[\"Status\"].toString().includes(',') ? $node[\"Autenticação1\"].json[\"Status\"].split(',') : [$node[\"Autenticação1\"].json[\"Status\"]]) }}",
+              "type": "array"
+            },
+            {
+              "id": "s-tok",
+              "name": "sessionToken",
+              "value": "={{ $json.session_token }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ec3f7e7e-bdb6-4dc8-ab18-fd84862b4613",
+      "name": "Preparador de dados1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1856,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2338c700-67e0-4d6a-8a32-b04545f1d515",
+              "name": "URLAUXILIAR",
+              "value": "={{ $node['Autenticação'].json['urlAPI'] }}",
+              "type": "string"
+            },
+            {
+              "id": "st",
+              "name": "Status",
+              "value": "={{ $json.Status || '10' }}",
+              "type": "string"
+            },
+            {
+              "id": "log",
+              "name": "Login_GLPI",
+              "value": "={{ $node['Autenticação'].json['Login_GLPI']}}",
+              "type": "string"
+            },
+            {
+              "id": "pwd",
+              "name": "Senha_GLPI",
+              "value": "={{ $node['Autenticação'].json['Senha_GLPI']}}",
+              "type": "string"
+            },
+            {
+              "id": "tok",
+              "name": "APP_TOKEN_GLPI",
+              "value": "={{ $node['Autenticação'].json['APP_TOKEN_GLPI']}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "14cc3405-ed4e-4078-ba4f-c6c344d1d9d5",
+      "name": "Autenticação1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1408,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $node['Autenticação'].json['urlAPI'] }}/apirest.php/search/User?forcedisplay[0]=1&forcedisplay[1]=2&forcedisplay[2]=5&forcedisplay[3]=6&forcedisplay[4]=9&forcedisplay[5]=11&forcedisplay[6]=34&forcedisplay[7]=80&range=0-10000&rawdata=true",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "App-Token",
+              "value": "={{ $(\"Autenticação1\").first().json.APP_TOKEN_GLPI }}"
+            },
+            {
+              "name": "Session-Token",
+              "value": "={{ $(\"Auth (BugBusters)\").first().json.session_token }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "b38a0a96-9e60-4d5f-9a75-76ffbabf8cd7",
+      "name": "GLPI Search3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2960,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const dadosBrutos = $input.first().json.data || [];\nconst resultado = [];\n\nconst emailProcurado = $('Conversão para json').first().json.output.email;\nlet telefoneProcurado = $('Dados da mensagem formatados').first().json.telefone;\n\ntry {\n  // Captura o telefone do nó anterior\n  let telOriginal = $(\"Dados da mensagem formatados\").first().json.telefone || \"5511976008411\";\n  \n  // Remove os 2 primeiros dígitos (o 55)\n  telefoneProcurado = String(telOriginal).slice(2); \n} catch (e) {\n  // Caso o nó não tenha sido executado, usa o padrão sem os dois primeiros dígitos\n  telefoneProcurado = \"11976008411\";\n}\n\nfor (let i = 0; i < dadosBrutos.length; i++) {\n  const u = dadosBrutos[i];\n\n  const bateEmail = emailProcurado !== \"\" && u[\"5\"] === emailProcurado;\n  \n  // Convertemos os campos do GLPI para String para comparação\n  const tel6 = String(u[\"6\"] || \"\");\n  const tel11 = String(u[\"11\"] || \"\");\n\n  // Verifica se o telefone procurado (ex: 11976008411) está contido nos campos do GLPI\n  const bateTelefone = telefoneProcurado !== \"\" && (tel6.includes(telefoneProcurado) || tel11.includes(telefoneProcurado));\n\n  if (bateEmail) {\n    const primeiroNome = u[\"9\"] || \"\";\n    const sobrenome = u[\"34\"] || \"\"; \n    const telefoneFinal = u[\"6\"] || u[\"11\"] || \"\"; \n\n    resultado[0] = {\n      id: u[\"2\"],\n      login: u[\"1\"],\n      nome: primeiroNome,\n      sobrenome: sobrenome,\n      phone: telefoneFinal,\n      email: u[\"5\"],\n      nome_completo: `${primeiroNome} ${sobrenome}`.trim(),\n      entidade: u[80]\n    };\n\n    break; \n  }else{\n  resultado[0] = { id: 0 };\n    }\n}\n\nreturn resultado;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3168,
+        1408
+      ],
+      "id": "5d1cfe2a-8067-434b-b1ce-cb9160249721",
+      "name": "Busca se o usuário tem conta no GLPI1"
+    },
+    {
+      "parameters": {
+        "jsCode": "let allTickets = [];\nlet totalCount = 0;\n\n// Busca o valor do status vindo do nó DADOS (funciona para Form ou Manual)\nconst statusInput = $(\"Autenticação1\").first().json.Status;\nconst tipoDeChamado = parseInt(statusInput);\n\nconst superClean = (html) => {\n  if (!html || typeof html !== 'string') return \"\";\n  return html\n    .replace(/<style[^>]*>[\\s\\S]*?<\\/style>/gi, '')\n    .replace(/<script[^>]*>[\\s\\S]*?<\\/script>/gi, '')\n    .replace(/<[^>]*>?/gm, '')\n    .replace(/&nbsp;/g, ' ')\n    .replace(/&quot;/g, '\"')\n    .replace(/&lt;/g, '<')\n    .replace(/&gt;/g, '>')\n    .replace(/&amp;/g, '&')\n    .replace(/&#\\d+;/g, (match) => String.fromCharCode(match.match(/\\d+/)[0]))\n    .replace(/\\s+/g, ' ')\n    .trim();\n};\n\nconst extractUserInfo = (html) => {\n  if (!html) return { nome: '', email: '', telefone: '' };\n  const nomeMatch = html.match(/^([^<]+)/);\n  const emailMatch = html.match(/mailto:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})/);\n  const telMatch = html.match(/tel:([^\"'>\\s]+)/);\n  return {\n    nome: nomeMatch ? nomeMatch[1].trim() : '',\n    email: emailMatch ? emailMatch[1] : '',\n    telefone: telMatch ? telMatch[1] : ''\n  };\n};\n\nfor (const item of items) {\n  const payload = item.json;\n  let source = payload.data?.[0]?.data ? payload.data[0] : (payload.data?.data ? payload.data : payload);\n\n  if (source && source.data) {\n    totalCount += parseInt(source.totalcount || 0);\n    const ticketsData = source.data;\n    const ticketsHtml = source.data_html || {};\n\n    Object.keys(ticketsData).forEach(ticketId => {\n      if (!isNaN(ticketId)) {\n        const ticket = ticketsData[ticketId];\n        const ticketHtml = ticketsHtml[ticketId] || {};\n        const rawContent = ticketHtml[21] || ticket[21] || \"\";\n        const reqInfo = extractUserInfo(ticketHtml[4] || \"\");\n\n        let ticketObj = {\n          id: ticket[2],\n          requerente_nome: reqInfo.nome,\n          requerente_email: reqInfo.email,\n          requerente_tel: reqInfo.telefone,\n          titulo: superClean(ticket[1]),\n          descricao_inicial: superClean(rawContent),\n          status_name: superClean(ticketHtml[12] || `Status ${ticket[12]}`),\n          data_abertura: ticket[15],\n          entidade: ticket[80]\n        };\n\n        if (tipoDeChamado !== 1) {\n          const tecInfo = extractUserInfo(ticketHtml[5] || \"\");\n          ticketObj.tecnicoAtribuido = tecInfo.nome || \"Não atribuído\";\n        }\n\n        allTickets.push(ticketObj);\n      }\n    });\n  }\n}\n\nreturn {\n  tipoDeChamado,\n  total_tickets_found: totalCount,\n  all_tickets: allTickets\n};"
+      },
+      "id": "9907dac4-ac59-457e-98e0-efa4e06b59ad",
+      "name": "Formatador dos chamados1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2752,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5549eba4-b723-4ea8-a261-bb8ebc97ae26",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3376,
+        1408
+      ],
+      "id": "c5f44878-97d3-411f-855e-42e21307fa3d",
+      "name": "A conta existe?"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "082cc246-c6fa-41ce-9f30-887500a8f67d",
+                    "leftValue": "={{ $node['Conversão para json'].json['output']['tipoDeMensagem'] }}",
+                    "rightValue": "verificar-conta",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "verificar-conta"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $node['Conversão para json'].json['output']['tipoDeMensagem'] }}",
+                    "rightValue": "consultar-chamado",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e8e70717-15b7-4a28-9df0-ed2078ab0dae"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Consultar-chamado"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        3760,
+        1680
+      ],
+      "id": "9f314326-1797-4350-9cef-56f7ed51befa",
+      "name": "Tipo de solicitação sem conta"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $node['Conversão para json'].json['output']['tipoDeMensagem'] }}",
+                    "rightValue": "consultar-chamado",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e8e70717-15b7-4a28-9df0-ed2078ab0dae"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Consultar-chamado"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "082cc246-c6fa-41ce-9f30-887500a8f67d",
+                    "leftValue": "={{ $node['Conversão para json'].json['output']['tipoDeMensagem'] }}",
+                    "rightValue": "verificar-conta",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "verificar-conta"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        3600,
+        880
+      ],
+      "id": "c04308d9-832d-4fbb-ba8a-a270386deeac",
+      "name": "Tipo de solicitação"
+    },
+    {
+      "parameters": {
+        "jsCode": "const chamadosAbertos = $input.first().json.chamadosAbertos || [];\nconst usuarioEmail = $input.first().json.usuarioEmail;\nconst usuarioTelefone = $input.first().json.usuarioTelefone;\n\nlet chamadosDoUsuario = [];\n\nfor (let i = 0; i < chamadosAbertos.length; i++) {\n  const chamado = chamadosAbertos[i];\n  \n  // Verifica se o e-mail bate (mais garantido)\n  const bateEmail = usuarioEmail && chamado.requerente_email === usuarioEmail;\n  \n  // Verifica se o telefone bate (removendo espaços se necessário)\n  const bateTelefone = usuarioTelefone && String(chamado.requerente_tel).trim() === String(usuarioTelefone).trim();\n\n  // Se bater qualquer um dos dois, adiciona à lista\n  if (bateEmail || bateTelefone) {\n    chamadosDoUsuario.push(chamado);\n  }\n}\n\nreturn chamadosDoUsuario;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4144,
+        864
+      ],
+      "id": "b93a30ed-9a20-4719-a85e-301b015a2c21",
+      "name": "Filtra chamados abertos para aquele usuário"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4a028d68-e645-45e5-b685-4e40fb708bd2",
+              "name": "usuarioEmail",
+              "value": "={{ $json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "ccbcdcdf-72b9-4de7-a3d7-a72cb3d86ed0",
+              "name": "usuarioTelefone",
+              "value": "={{ $json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "72540b9a-8adc-4d6b-aef2-075bdccb53df",
+              "name": "chamadosAbertos",
+              "value": "={{ $('Formatador dos chamados1').item.json.all_tickets }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4877d695-0b3d-4538-8a3d-fc27b330621a",
+      "name": "Contatenador",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3968,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Acessa todos os itens que chegam do nó anterior\nconst chamados = Object.values($('Filtra chamados abertos para aquele usuário').all().map(item => item.json));\n\nif (chamados.length === 0) {\n    return {\n        chamadosAbertos: 0,\n        resumo: \"Não houve chamado encontrado no nome do cliente.\"\n    };\n}\n\n// Dicionário de status\nconst guiaStatus = {\n    \"Novo\": \"Está na fila, aguardando técnico.\",\n    \"Em atendimento (atribuído)\": \"O técnico está verificando agora e logo entrará em contato.\",\n    \"Em atendimento (planejado)\": \"Está na agenda do técnico. Ele entrará em contato assim que estiver livre.\",\n    \"Pendente\": \"Aguardando algo externo (fornecedor ou sua resposta).\"\n};\n\nlet resumoTexto = `Chamados identificados: ${chamados.length}\\n\\n`;\n\n// Monta a lista formatada\nchamados.forEach((c, index) => {\n    const explicacao = guiaStatus[c.status_name] || \"Consulte o painel para mais detalhes.\";\n    \n    // FORMATAÇÃO DA DATA\n    let dataFormatada = c.data_abertura; \n    try {\n        const dataObj = new Date(c.data_abertura);\n        // Formata para: 19/01/2026 às 10:04\n        dataFormatada = dataObj.toLocaleString('pt-BR', {\n            day: '2-digit',\n            month: '2-digit',\n            year: 'numeric',\n            hour: '2-digit',\n            minute: '2-digit'\n        }).replace(',', ' às');\n    } catch (e) {\n        // Caso a data venha em um formato que o JS não entenda, mantém a original\n        dataFormatada = c.data_abertura;\n    }\n\n    resumoTexto += `*ID:* #${c.id} - ${c.titulo}\\n`;\n    resumoTexto += `*Status:* ${c.status_name}\\n(_${explicacao}_)\\n`;\n    resumoTexto += `*Data de abertura:* ${dataFormatada}\\n`;\n    resumoTexto += `*Técnico:* ${c.tecnicoAtribuido || 'Não atribuído'}\\n\\n`;\n});\n\nreturn {\n    chamadosAbertos: chamados.length,\n    resumo: resumoTexto.trim()\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4336,
+        864
+      ],
+      "id": "f91c801c-d489-4564-990b-0f1d1bf02415",
+      "name": "Prepara a mensagem para o usuário"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Captura dos dados\nconst inputChamados = $('Formatador dos chamados1').first().json.all_tickets;\nconst usuario = $('Busca se o usuário tem conta no GLPI1').first();\n\n\n\n// Garante que o email do usuário esteja limpo (sem espaços) e em minúsculo\nconst emailUsuario = usuario.json.email.trim().toLowerCase();\n\n// Filtra os chamados garantindo a mesma limpeza nos dados da lista\nlet chamadosDoUsuario = inputChamados.filter(chamado => {\n  if (!chamado.requerente_email) return false;\n  \n  return chamado.requerente_email.trim().toLowerCase() === emailUsuario;\n});\n\n// Se não encontrar nada, retorna o objeto de aviso\nif (chamadosDoUsuario.length === 0) {\n  return [{\n    json: {\n      quantidade: 0,\n      mensagem: \"Nenhum chamado encontrado para o email: \" + emailUsuario\n    }\n  }];\n}\n\n// Se encontrar, retorna a lista de chamados\nreturn chamadosDoUsuario;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3760,
+        1264
+      ],
+      "id": "789dcd74-6117-4597-9561-ee67ec63cf89",
+      "name": "Filtra chamados abertos para aquele número1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Faça a verificação por favor.",
+        "options": {
+          "systemMessage": "=Você é um Analista de Triagem de Suporte Técnico. Sua missão é identificar se um novo chamado é duplicado ou muito similar a chamados que já estão abertos para o mesmo usuário.\n\n### Chamados Ativos do Usuário:\n{{ JSON.stringify($('Filtra chamados abertos para aquele número1').all().map(item => item.json)) }}\n\n### Novo Chamado para Análise:\n{{ JSON.stringify($('Conversão para json').first().json) }}\n\n### Instruções de Comparação:\n1. Compare a intenção principal e o problema relatado.\n2. Ignore diferenças irrelevantes (ex: saudação ou erros de digitação).\n3. Considere \"verdadeiro\" se o novo chamado tratar do mesmo incidente ou dúvida que um chamado aberto.\n\n### Formato de Saída (JSON Estrito):\nRetorne APENAS o objeto JSON puro, sem blocos de código Markdown (sem ```json), caso exista algum chamado parecido, relate na mensagem, falando qual o número do chamado, essa mensagem terá que ser passada de forma amigavel, informado que o chamado do usuário já esta em noso sistema, caso esteja atribuido a um técnico, relate que o nome do técnico e passe que o mesmo ja está analisando o caso e que em breve ele entrará em contato.\n\nSaiba que possuimos 4 tipos de status que deverá ser repassado pro usuário de formas diferentes, sendo eles como base:\n\nNovo: O chamado está em nossa fila, assim que um técnico estiver disponivel iniciara o atendimento dele\nEm atendimento (atribuido): O técnico está verificando o chamado agora e em breve entrará em contato\nEm atendimento (planejado): Está na fila de nosso técnico, assim que ele estiver disponivel entrara em contato\nPendente: O chamado está aguardando alguma pendencia externa, sendo elas pendencias com fornecedores, pendencias com outras equipes, pendencias com usuário e coisas do tipo\n\n{\n  \"jaPossuiChamadoParecido\": boolean,\n  \"resumo\": \"Mensagem aqui\",\n  \"idChamadoRelacionado\": \"ID ou null\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        5008,
+        1440
+      ],
+      "id": "ee7e98ab-f3b0-4a19-aac4-081f7b29476c",
+      "name": "AI Agent1",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9707f11c-613e-4b06-92c1-5a708205c354",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5344,
+        1440
+      ],
+      "id": "6142f890-0e69-438b-bbe8-07df0e97a11b",
+      "name": "Conversão para json1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        5552,
+        1440
+      ],
+      "id": "3aa14e50-be36-46e4-8541-f3c048722e7a",
+      "name": "Limit1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "94aa824c-5021-4171-b3a1-c5b7c1a6ccb3",
+              "leftValue": "={{ $json.output.jaPossuiChamadoParecido }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        5728,
+        1440
+      ],
+      "id": "32b5cdc6-5125-40f3-bc95-b641eaa36680",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Faça a verificação por favor.",
+        "options": {
+          "systemMessage": "=Você é um motor de processamento de dados para o GLPI. Sua única função é analisar o contexto e retornar um JSON puro, sem formatação Markdown e sem texto explicativo.\n\nREGRAS OBRIGATÓRIAS DE SELEÇÃO:\nitilcategories_id: - Analise o \"Conteúdo (Caso)\". No exemplo de falta de internet/cabo, o assunto é \"Rede\".\n\nProcure na \"BASE DE CATEGORIAS\" o ID que combine o assunto com o termo \"Falha/Erro\" ou \"Incidente\".\n\nPROIBIDO: Não invente IDs. Se o ID não estiver na lista abaixo, você falhou na tarefa. Para problemas de rede, use o ID 195.\n\ntype: - Observe o \"tipo de chamado\" escrito ao lado do ID na base.\n\nSe na base estiver \"tipo de chamado: incidente\", o type no JSON deve ser 1.\n\nSe na base estiver \"tipo de chamado: requisição\", o type no JSON deve ser 2.\n\ncontent: - Mantenha todo o HTML original. Remova apenas as quebras de linha (\\n) para que o JSON não quebre.\n\nBASE DE CATEGORIAS:\n{{ $json.result }}\n\nUrgency (Cálculo de Urgência): Defina de 1 a 5 seguindo esta lógica:\n\n5 (Crítica): Setor inteiro parado, servidor offline ou risco de segurança imediato.\n\n4 (Alta): Usuário VIP ou trabalho principal do usuário totalmente impedido de realizar seu trabalho (ex: sem rede/internet).\n\n3 (Média): Falha parcial que permite trabalhar com limitações ou em outro sistema.\n\n2 (Baixa): Pequeno erro estético, dúvida de uso ou ajuste de configuração simples.\n\n1 (Planejada): Solicitação de rotina para data futura.\n\nIMPORTANTE: Nunca retorne 0.\n\nData a ser usada:\n{{ $now.setZone('America/Sao_Paulo').toFormat('yyyy-MM-dd HH:mm:ss') }}\n\nFORMATO DE SAÍDA:\n{\"input\":{\"name\":\"string\",\"content\":\"string\",\"type\":integer,\"itilcategories_id\":integer,\"urgency\":integer,\"_users_id_requester\":integer,\"date\":\"YYYY-MM-DD HH:MM:SS\",\"entities_id\":integer}}\n\nCONTEXTO:\nEntidade do usuário: {{ $node[\"Conversão para json\"].json[\"output\"][\"empresa\"] }} ID do usuário: {{ $node['Faz o incremento do id'].json['idUser'] }} Conteúdo (Caso): {{ $node[\"Conversão para json\"].json[\"output\"][\"caso\"] }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        5152,
+        1136
+      ],
+      "id": "d34f810a-ec20-4d17-bfb4-2be269dd69c2",
+      "name": "AI Agent3",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9707f11c-613e-4b06-92c1-5a708205c354",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5488,
+        1136
+      ],
+      "id": "2b8cf540-955c-44ca-b309-4e73df5d061e",
+      "name": "Conversão para json3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $node['Autenticação'].json['urlAPI'] }}/apirest.php/Ticket",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "App-Token",
+              "value": "={{ $(\"Autenticação1\").first().json.APP_TOKEN_GLPI }}"
+            },
+            {
+              "name": "Session-Token",
+              "value": "={{ $(\"Auth (BugBusters)\").first().json.session_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\nJSON.stringify({\n  \"input\": {\n    \"name\": $json.output.input.name,\n    \"content\": $json.output.input.content,\n    \"type\": $json.output.input.type,\n    \"itilcategories_id\": $json.output.input.itilcategories_id,\n    \"urgency\": $json.output.input.urgency,\n    \"_users_id_requester\": $node[\"Faz o incremento do id\"].json[\"idUser\"],\n    \"date\": $json.output.input.date,\n    \"entities_id\": $json.output.input.entities_id\n  }\n})\n}}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "170c3ceb-765d-4d48-bba3-adb4d6983438",
+      "name": "GLPI Search4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5696,
+        1136
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pegamos todos os itens que entraram no nó\nconst itens = $input.all();\nlet textoFinal = \"\";\n\nfor (let i = 0; i < itens.length; i++) {\n  // No n8n, os dados de cada item ficam dentro de .json\n  const categoria = itens[i].json;\n  const testeTipo = categoria.is_incident\n  let tipo\n  if(testeTipo === 1){\n    tipo = \"incidente\"\n  }else{\n    tipo = \"requisição\"\n  }\n  \n  const idCategoria = categoria.id;\n  const nomeCategoria = categoria.completename; \n  \n  textoFinal += `id: ${idCategoria} nome: ${nomeCategoria} tipo de chamado: ${tipo} ${(i < itens.length - 1 ? \"\\n\" : \"\")}`\n}\n\n// Retornamos o total e a lista formatada\nreturn { \n  total: itens.length,\n  result: textoFinal \n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4320,
+        1264
+      ],
+      "id": "12018634-5b00-40ff-b9f7-a6f9b5328646",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Suas variáveis existentes ---\nconst password = \"123@mudar\";\nconst phone = $('Dados da mensagem formatados').first().json.telefone;\nconst is_active = 1;\nconst profile_id = 1;\nconst entities_id = $('Conversão para json').first().json.output.empresa;\nconst email = $('Conversão para json').first().json.output.email;\n\n// --- Lógica de Manipulação ---\n// 1. Divide o email em \"usuario\" e \"dominio completo\"\nconst [userPart, fullDomain] = email.split('@'); \n\n// 2. Pega apenas a primeira parte do domínio (antes do primeiro ponto)\nconst domainFirstPart = fullDomain.split('.')[0];\n\n// 3. Divide o usuario por pontos para o Firstname e Realname\nconst nameParts = userPart.split('.');\n\n// 4. Monta o \"name\" como usuario + primeiro item do domínio\nconst name = `${userPart}.${domainFirstPart}`;\n\n// 5. Formata os nomes (Primeira letra maiúscula)\nconst firstname = nameParts[0].charAt(0).toUpperCase() + nameParts[0].slice(1);\nconst realname = nameParts.length > 1 ? nameParts[1].charAt(0).toUpperCase() + nameParts[1].slice(1) : \"\";\n\n// --- Retorno do Objeto ---\nreturn [{\n    \"input\": {\n        \"name\": name,\n        \"firstname\": firstname,\n        \"realname\": realname,\n        \"password\": password,\n        \"phone\": phone,\n        \"is_active\": is_active,\n        \"profiles_id\": profile_id,\n        \"entities_id\": entities_id\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3984,
+        1664
+      ],
+      "id": "537741cf-99c4-4777-a9ac-f9fa7fe58a5a",
+      "name": "Gera dados pra cadastro"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $node['Autenticação'].json['urlAPI'] }}/apirest.php/User/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "App-Token",
+              "value": "={{ $(\"Autenticação\").first().json.APP_TOKEN_GLPI }}"
+            },
+            {
+              "name": "Session-Token",
+              "value": "={{ $(\"Auth (BugBusters)1\").first().json.session_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"input\": {\n        \"name\": \"{{ $json.input.name }}\",\n        \"firstname\": \"{{ $json.input.firstname }}\",\n        \"realname\": \"{{ $json.input.realname }}\",\n        \"password\": \"{{ $json.input.password }}\",\n        \"phone\": \"{{ $json.input.phone }}\",\n        \"is_active\": {{ $json.input.is_active }},\n        \"profiles_id\": {{ $json.input.profiles_id }},\n        \"entities_id\": {{ $json.input.entities_id }}\n    }\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "6bb86269-79b8-4d53-8ec0-3570762267e4",
+      "name": "GLPI ITILCategory",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4224,
+        1664
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $node['Autenticação'].json['urlAPI'] }}/apirest.php/UserEmail/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "App-Token",
+              "value": "={{ $(\"Autenticação\").first().json.APP_TOKEN_GLPI }}"
+            },
+            {
+              "name": "Session-Token",
+              "value": "={{ $(\"Auth (BugBusters)1\").first().json.session_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"input\": {\n        \"users_id\": {{ $json.id }},\n        \"email\": \"{{ $node['Conversão para json'].json['output']['email'] }}\",\n        \"is_default\": 1\n    }\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "9f9159c8-2b78-40ab-b426-96c0de0e43e6",
+      "name": "GLPI ITILCategory2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4416,
+        1664
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let idCriado = null;\nlet statusConta = null;\n\n// 1. Tenta pegar o ID do nó de criação\ntry {\n  const nodeCriacao = $('GLPI ITILCategory');\n  if (nodeCriacao && nodeCriacao.first()) {\n    idCriado = nodeCriacao.first().json.id;\n  }\n} catch (e) {\n  // Se o nó não foi executado ou deu erro, idCriado continua null\n}\n\n// 2. Tenta pegar o ID do nó de busca (ID que já existe)\nlet idExiste = null;\ntry {\n  const nodeBusca = $('Busca se o usuário tem conta no GLPI1');\n  if (nodeBusca && nodeBusca.first()) {\n    idExiste = nodeBusca.first().json.id;\n  }\n} catch (e) {\n  // Se não encontrar, idExiste continua null\n}\n\n// 3. Lógica de decisão para o ID e para o campo \"conta\"\nlet idFinal = null;\n\nif (idCriado) {\n  idFinal = idCriado;\n  statusConta = \"criada\";\n} else if (idExiste) {\n  idFinal = idExiste;\n  statusConta = \"existe\";\n} else {\n  // Caso nenhum dos dois exista, você pode definir um padrão ou erro\n  idFinal = $input.first().json.id || null;\n  statusConta = \"nao_encontrado\";\n}\n\nreturn {\n  idUser: idFinal,\n  conta: statusConta\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3936,
+        1264
+      ],
+      "id": "1f56d423-e5ff-4eea-b52e-19cfdfc3beec",
+      "name": "Faz o incremento do id"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c2ee9273-268e-4562-95ce-0355a6e276af",
+              "leftValue": "={{ $node['Faz o incremento do id'].json['conta'] }}",
+              "rightValue": "criada",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        4512,
+        1264
+      ],
+      "id": "993fbdfd-13e8-40db-809c-27ef61bcf442",
+      "name": "Verificações de conta criada"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2096,
+        1648
+      ],
+      "id": "c23d8e7f-c0c3-4a18-9275-a17f38718bac",
+      "name": "When clicking ‘Execute workflow’",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ce664b7c-ba1a-499d-b914-035f6565dc43",
+              "leftValue": "={{ $node['Filtra chamados abertos para aquele número1'].json['mensagem'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        4688,
+        1424
+      ],
+      "id": "09971a5f-bb49-44e4-809a-f87eeb399760",
+      "name": "Não possui chamados na conta?"
+    },
+    {
+      "parameters": {
+        "content": "## Webhook WhatsApp + extrator de texto + formatador\n\n- Monitora todas as mensagens recebidas no WhatsApp\n- Extrai os dados necessários\n- Formata os dados pra um formato legivel.",
+        "height": 320,
+        "width": 624
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2128,
+        1248
+      ],
+      "typeVersion": 1,
+      "id": "e26a2c92-cbcd-487e-bcbf-f29862ddaf5d",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Credenciais dinamicas do GLPI\n\n- URL DA API GLPI\n- APP TOKEN GLPI\n- Login GLPI\n- Senha GLPI\n- Status (sempre manter 10)\n\n## Conexão com o WhatsApp\n\n- Nome da instancia do evolution \n",
+        "height": 608,
+        "width": 208,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1280,
+        944
+      ],
+      "typeVersion": 1,
+      "id": "3feb4dc8-b2f9-444e-8d46-2508c5c8d5df",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Gera session Token do GLPI",
+        "height": 240,
+        "width": 400,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1072,
+        1312
+      ],
+      "typeVersion": 1,
+      "id": "f9eda8b8-4622-4309-a05b-459e9eaed79c",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Importa todas as empresas cadastradas ativas\n- Formato: \"id: xx Entidade: xxxxxxx\"",
+        "height": 240,
+        "width": 672,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -672,
+        1312
+      ],
+      "typeVersion": 1,
+      "id": "2a199750-d8c5-4396-be17-364215eb4bb8",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## IA de interação e triagem com o usuário\n\n### 1. Estrutura de Comunicação (Output)\nA IA deve se comunicar exclusivamente através de um JSON puro, garantindo a integração com o sistema de chamados.\n\nModelo de JSON:\n\n```json\n{\n  \"tipoDeMensagem\": \"responder | verificar-conta | consultar-chamado\",\n  \"empresa\": ID_NUMERICO_OU_NULL,\n  \"conteudoDaMenssagem\": \"Texto da resposta ao usuário (Linguagem simples e gentil)\",\n  \"email\": \"email@usuario.com\",\n  \"caso\": \"Estrutura HTML ou null\"\n}\n```\n\n### 2. Prompt do Sistema (Instruções da IA)\nPerfil e Objetivo\nVocê é a IA de suporte da Bugbusters. Sua função é atuar estritamente como Nível 1, coletando dados para o sistema GLPI e realizando triagem física simplificada.\n\n#### Roteiro de Atendimento\n- Identificação: Solicite o e-mail empresarial. Use o domínio para identificar a empresa no banco de dados fornecido no node anterior.\n- Validação de Unidade: Para empresas com sub-unidades (Solaia, Pillowtex, Jamaica), pergunte obrigatoriamente a unidade antes de prosseguir.\n- Bloqueio de Segurança: Se não localizar a empresa pelo e-mail ou nome, responda: \"Ainda não consegui localizar sua empresa em nosso sistema. Poderia me informar o nome exato da empresa?\". Não avance sem o ID da empresa.\n- Triagem: Identificada a empresa, pergunte: \"Como posso te ajudar?\". Investigue se o problema é individual ou coletivo e solicite detalhes (nomes de pastas, sistemas, tipos de lentidão).\n- Testes Físicos: Peça verificações simples (cabos, reiniciar, luzes, barulhos).\n- Escalação (Regra do BASTA): Se os testes físicos falharem ou o usuário confirmar que já os fez, mude tipoDeMensagem para verificar-conta e gere o relatório no campo caso.\n\n#### Restrições Técnicas (Linguagem)\n\n- Proibição Absoluta: Nunca peça para abrir Prompt de Comando (CMD), digitar comandos (IPCONFIG), ou usar termos como DNS, Gateway, IP ou Spooler com o usuário.\n\n- Tom de Voz: Sempre gentil, paciente e sem termos técnicos (Nível 1).\n\n### Estrutura do campo \"CASO\" (HTML)\n\nQuando o tipoDeMensagem for verificar-conta, preencha o campo caso seguindo este modelo para o técnico N2:\n```json\n<h3>Detalhes do caso</h3>\n<p><strong>Sintoma:</strong> [Descreva o problema relatado]</p>\n\n<h3>Ações realizadas</h3>\n<ul>\n  <li>[Ação 1 realizada na triagem]</li>\n  <li>[Ação 2 realizada na triagem]</li>\n</ul>\n\n<h3>Sugestões para o técnico</h3>\n<p>[Análise técnica: ex: Verificar IP, DNS, Driver, Spooler, etc.]</p>\n\n<h3>Contato com o usuário</h3>\n<p><strong>Telefone:</strong> {{ $node[\"Dados da mensagem formatados\"].json[\"telefone\"] }}<br>\n<strong>Email:</strong> [E-mail do usuário]</p>\n```\n",
+        "height": 1552,
+        "width": 656,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "d1f233f2-a874-4fc3-b7a3-2a1558099ec9",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Verifica TipoDeMensagem\n- Caso seja responder, ele avança como true, os demais, como false",
+        "height": 288,
+        "width": 352,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        656,
+        1264
+      ],
+      "typeVersion": 1,
+      "id": "d6610af2-9a39-4c29-9b35-a2c4602515cc",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Comunicação com usuário\nComunicação direta com cliente:\n- Realiza triagem\n- Responde dúvidas\n- Comunicação direta\n\n\n\n\n\n\n\n\n\n\n\n\n\n## Comunicação especifica\nInforma os seguintes casos:\n- Irá verificar os chamados do usuário\n- Irá iniciar a abertura do chamado",
+        "height": 592,
+        "width": 336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1008,
+        960
+      ],
+      "typeVersion": 1,
+      "id": "0e404279-8b21-4232-bf5c-6d78b3e5aec3",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Gera session Token auxiliar do GLPI",
+        "height": 240,
+        "width": 688,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1344,
+        1312
+      ],
+      "typeVersion": 1,
+      "id": "6e430b7d-2bdd-4823-82fb-7026fb5a3455",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## Importa todos os chamados não solucionados do glpi e formata\nFormato de saída:\n\n```json\n{\ntipoDeChamado: 10 (padrão de todos não solucionados);\ntotal_tickets_found: Total de chamados não solucionados;\nall_tickets: {\n          id: Id do chamado;\n          requerente_nome: Nome do requerente;\n          requerente_email: Email do requerente;\n          requerente_tel: Telefone do requerente;\n          titulo: Titulo do chamado;\n          descricao_inicial: Descrição do chamado;\n          status_name: Status do chamado;\n          data_abertura: Data de abertura;\n          entidade: Empresa do requerente\n    }\n}\n```",
+        "height": 560,
+        "width": 864,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2032,
+        992
+      ],
+      "typeVersion": 1,
+      "id": "041d37d0-b6b9-4f9a-8b72-92f2e7a3443c",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## Busca se usuário tem conta do GLPI\n- Utiliza o email capturado pela IA pra realizar uma busca no glpi\n- Caso não tenha, retorna false e inicia a criação da conta\n\n",
+        "height": 288,
+        "width": 624,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2896,
+        1264
+      ],
+      "typeVersion": 1,
+      "id": "a4da4def-7f00-4966-98c3-72f0e7fc9230",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $node['Autenticação'].json['linkEvolution'] }}/message/sendText/{{ $node['Autenticação'].json['NomeDaInstanciaEvolution'] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $node['Autenticação'].json['APIKeyEvolution'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Dados da mensagem formatados\"].json[\"telefone\"] }}\",\n  \"options\": {\n    \"delay\": 1200\n  },\n  \"text\": {{ JSON.stringify($('Conversão para json').item.json.output.conteudoDaMenssagem) }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1120,
+        1136
+      ],
+      "id": "6bdc0465-fc0b-4b2e-b54f-6bfc3f639383",
+      "name": "Contato com o usuário",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $node['Autenticação'].json['linkEvolution'] }}/message/sendText/{{ $node['Autenticação'].json['NomeDaInstanciaEvolution'] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $node['Autenticação'].json['APIKeyEvolution'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Dados da mensagem formatados\"].json[\"telefone\"] }}\",\n  \"options\": {\n    \"delay\": 1200\n  },\n    \"text\": \"{{ $('Conversão para json').item.json.output.conteudoDaMenssagem }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1120,
+        1408
+      ],
+      "id": "b072e55a-153d-40a3-935f-b21e17611589",
+      "name": "Contato com o usuário2",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $node['Autenticação'].json['linkEvolution'] }}/message/sendText/{{ $node['Autenticação'].json['NomeDaInstanciaEvolution'] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $node['Autenticação'].json['APIKeyEvolution'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Dados da mensagem formatados\"].json[\"telefone\"] }}\",\n  \"options\": {\n    \"delay\": 1200\n  },\n  \"text\": {{ JSON.stringify($json.resumo) }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4544,
+        864
+      ],
+      "id": "aed3e578-86fb-4710-8a87-cfe42ce4e265",
+      "name": "Contato com o usuário3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $node['Autenticação'].json['linkEvolution'] }}/message/sendText/{{ $node['Autenticação'].json['NomeDaInstanciaEvolution'] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $node['Autenticação'].json['APIKeyEvolution'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Dados da mensagem formatados\"].json[\"telefone\"] }}\",\n  \"options\": {\n    \"delay\": 1200\n  },\n    \"text\": \"Após verificação, notamos que você não possui nenhum chamado em aberto!\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4048,
+        1952
+      ],
+      "id": "2ef8ed38-7926-4680-b850-c6303a5149d2",
+      "name": "Contato com o usuário4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $node['Autenticação'].json['linkEvolution'] }}/message/sendText/{{ $node['Autenticação'].json['NomeDaInstanciaEvolution'] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $node['Autenticação'].json['APIKeyEvolution'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Dados da mensagem formatados\"].json[\"telefone\"] }}\",\n  \"options\": {\n    \"delay\": 1200\n  },\n  \"text\": \"{{ JSON.stringify($json.output.resumo) }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        5968,
+        1424
+      ],
+      "id": "bea88443-b76e-46f1-90b2-1ad6a4719fc0",
+      "name": "Contato com o usuário5",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $node['Autenticação'].json['linkEvolution'] }}/message/sendText/{{ $node['Autenticação'].json['NomeDaInstanciaEvolution'] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $node['Autenticação'].json['APIKeyEvolution'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Dados da mensagem formatados\"].json[\"telefone\"] }}\",\n  \"options\": {\n    \"delay\": 1200\n  },\n    \"text\": \"Foi aberto um chamado referente a sua solicitação.\\nNúmero do chamado: *{{ $json.id }}*\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        5952,
+        1136
+      ],
+      "id": "45a686b3-16e0-4251-8979-46c0580c750f",
+      "name": "Contato com o usuário6",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $node['Autenticação'].json['linkEvolution'] }}/message/sendText/{{ $node['Autenticação'].json['NomeDaInstanciaEvolution'] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $node['Autenticação'].json['APIKeyEvolution'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"5511976008411\",\n  \"options\": {\n    \"delay\": 1200\n  },\n  \"text\": \"Houve um erro no fluxo no seguinte horario: {{ $now.format('DD/ HH:mm:ss') }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1056,
+        2320
+      ],
+      "id": "8f3ae64e-4abc-420d-902c-36953eaa78d1",
+      "name": "Contato com o usuário1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $node['Autenticação'].json['linkEvolution'] }}/message/sendText/{{ $node['Autenticação'].json['NomeDaInstanciaEvolution'] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $node['Autenticação'].json['APIKeyEvolution'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Dados da mensagem formatados\"].json[\"telefone\"] }}\",\n  \"options\": {\n    \"delay\": 1200\n  },\n  \"text\": \"Estamos sofrendo com uma pequena falha técnica. Tente novamente mais tarde.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1296,
+        2320
+      ],
+      "id": "0198a8de-849d-42db-9d8c-102d977739c9",
+      "name": "Contato com o usuário7"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $node['Autenticação'].json['linkEvolution'] }}/message/sendText/{{ $node['Autenticação'].json['NomeDaInstanciaEvolution'] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $node['Autenticação'].json['APIKeyEvolution'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Dados da mensagem formatados\"].json[\"telefone\"] }}\",\n  \"options\": {\n    \"delay\": 1200\n  },\n    \"text\": \"Foi aberto um chamado referente a sua solicitação.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        6224,
+        1152
+      ],
+      "id": "1b8bfadd-91a5-4ac9-aa7d-8badf80ec7da",
+      "name": "Contato com o usuário8"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $node['Autenticação'].json['linkEvolution'] }}/message/sendText/{{ $node['Autenticação'].json['NomeDaInstanciaEvolution'] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $node['Autenticação'].json['APIKeyEvolution'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node[\"Dados da mensagem formatados\"].json[\"telefone\"] }}\",\n  \"options\": {\n    \"delay\": 1200\n  },\n  \"text\": \"Identificamos que você já possui um chamado similar em aberto.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        6240,
+        1440
+      ],
+      "id": "aaf129f7-ba1f-48ec-a7cb-c77b53c7bce7",
+      "name": "Contato com o usuário9"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        1584
+      ],
+      "id": "2d37c410-7622-4b5d-b22a-abfb9373900b",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "b7HeNF7cJOsd85Kq",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        5120,
+        1312
+      ],
+      "id": "16e5aeaa-b79f-4830-b121-60f64e89cf69",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "b7HeNF7cJOsd85Kq",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        4944,
+        1600
+      ],
+      "id": "3681ce5c-ab8a-4ae5-a126-3d3dee66aca0",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "b7HeNF7cJOsd85Kq",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Dados da mensagem formatados').first().json.telefone }}",
+        "tableName": "n8n_chat_test6",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        1632
+      ],
+      "id": "ec4e5c00-0b96-456e-978b-b673c5439614",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "1IZtEABnohKXJTLT",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Auth (BugBusters)1": {
+      "main": [
+        [
+          {
+            "node": "Preparador de dados",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Contato com o usuário1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparador de dados": {
+      "main": [
+        [
+          {
+            "node": "Get Active Entities",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Autenticação": {
+      "main": [
+        [
+          {
+            "node": "Auth (BugBusters)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados da mensagem": {
+      "main": [
+        [
+          {
+            "node": "Dados da mensagem formatados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados da mensagem formatados": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Autenticação",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Dados da mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Conversão para json",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Contato com o usuário1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversão para json": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Contato com o usuário1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GLPI ITILCategory1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Contato com o usuário1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Active Entities": {
+      "main": [
+        [
+          {
+            "node": "Get All Entities",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Contato com o usuário1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Entities": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Contato com o usuário1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Contato com o usuário",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Contato com o usuário2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auth (BugBusters)": {
+      "main": [
+        [
+          {
+            "node": "Preparador de dados1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Contato com o usuário1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Iterador de todos os status de chamado1": {
+      "main": [
+        [
+          {
+            "node": "Formatador dos chamados1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GLPI Search2": {
+      "main": [
+        [
+          {
+            "node": "Iterador de todos os status de chamado1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Contato com o usuário1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Organizador de status1": {
+      "main": [
+        [
+          {
+            "node": "GLPI Search2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparador de dados1": {
+      "main": [
+        [
+          {
+            "node": "Organizador de status1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Autenticação1": {
+      "main": [
+        [
+          {
+            "node": "Auth (BugBusters)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GLPI Search3": {
+      "main": [
+        [
+          {
+            "node": "Busca se o usuário tem conta no GLPI1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca se o usuário tem conta no GLPI1": {
+      "main": [
+        [
+          {
+            "node": "A conta existe?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatador dos chamados1": {
+      "main": [
+        [
+          {
+            "node": "GLPI Search3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "A conta existe?": {
+      "main": [
+        [
+          {
+            "node": "Tipo de solicitação",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tipo de solicitação sem conta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tipo de solicitação sem conta": {
+      "main": [
+        [
+          {
+            "node": "Gera dados pra cadastro",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Contato com o usuário4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tipo de solicitação": {
+      "main": [
+        [
+          {
+            "node": "Contatenador",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Filtra chamados abertos para aquele número1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtra chamados abertos para aquele usuário": {
+      "main": [
+        [
+          {
+            "node": "Prepara a mensagem para o usuário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contatenador": {
+      "main": [
+        [
+          {
+            "node": "Filtra chamados abertos para aquele usuário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepara a mensagem para o usuário": {
+      "main": [
+        [
+          {
+            "node": "Contato com o usuário3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtra chamados abertos para aquele número1": {
+      "main": [
+        [
+          {
+            "node": "Faz o incremento do id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Conversão para json1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Contato com o usuário1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversão para json1": {
+      "main": [
+        [
+          {
+            "node": "Limit1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit1": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "Contato com o usuário5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "Conversão para json3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Contato com o usuário1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversão para json3": {
+      "main": [
+        [
+          {
+            "node": "GLPI Search4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GLPI Search4": {
+      "main": [
+        [
+          {
+            "node": "Contato com o usuário6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Contato com o usuário1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Verificações de conta criada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gera dados pra cadastro": {
+      "main": [
+        [
+          {
+            "node": "GLPI ITILCategory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GLPI ITILCategory": {
+      "main": [
+        [
+          {
+            "node": "GLPI ITILCategory2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GLPI ITILCategory2": {
+      "main": [
+        [
+          {
+            "node": "Faz o incremento do id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Faz o incremento do id": {
+      "main": [
+        [
+          {
+            "node": "GLPI ITILCategory1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificações de conta criada": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Não possui chamados na conta?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Dados da mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Não possui chamados na conta?": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contato com o usuário2": {
+      "main": [
+        [
+          {
+            "node": "Autenticação1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Contato com o usuário1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contato com o usuário": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Contato com o usuário1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contato com o usuário1": {
+      "main": [
+        [
+          {
+            "node": "Contato com o usuário7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contato com o usuário6": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Contato com o usuário8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contato com o usuário5": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Contato com o usuário9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "d069fe6e-ec03-47a1-9435-69b00f44cad5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ffbfdf3ce47a1842904b0b0985b8b2ed9db91162ebc2fde867186855e3669ffe"
+  },
+  "id": "WpI0OP2CzvAb73McV7ryK",
+  "tags": []
+}

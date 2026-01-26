@@ -1,0 +1,726 @@
+{
+  "name": "GESTOR SERVICE DESK",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -4304,
+        224
+      ],
+      "id": "cf44eb74-d70f-4ebc-b080-6565cc5ee2da",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "79278579-09b6-40ec-86f8-b68b17ea87a9",
+              "name": "urlAPI",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "464c3fad-9884-4e1d-a06c-8b8191f87cef",
+              "name": "APP_TOKEN_GLPI",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "7de97a6f-adb5-4e40-8929-d42bd07e3dc2",
+              "name": "Login_GLPI",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "eb39c8c0-c2dd-420b-b2a5-c7a05fe326cd",
+              "name": "Senha_GLPI",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "e0d16930-6cf2-45e9-a8d9-594f5aef173b",
+              "name": "Status",
+              "value": "={{ $json.Status || '10' }}",
+              "type": "string"
+            },
+            {
+              "id": "e3d6fcca-d8bb-4716-91f9-9b9121318f01",
+              "name": "NomeDaInstanciaEvolution",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "77d8f442-a301-4770-a660-325d1e036eda",
+              "name": "linkEvolution",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "65037bb9-4699-4ec5-8204-bc9c64d43dc0",
+              "name": "APIKeyEvolution",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "93529e55-6ac9-4065-a4ac-319020d08456",
+              "name": "urlMCP",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4096,
+        224
+      ],
+      "id": "53186fbb-83ed-40d5-8c75-29be019a6c1e",
+      "name": "Autenticação"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Autenticação2').first().json.URLAUXILIAR }}/apirest.php/search/Ticket?range=0-9999&withindexes=true&giveItems=true&forcedisplay[0]=1&forcedisplay[1]=2&forcedisplay[2]=7&forcedisplay[3]=15&forcedisplay[4]=80&forcedisplay[5]=5&forcedisplay[6]=3&criteria[0][field]=23&criteria[0][searchtype]=equals&criteria[0][value]=0&criteria[1][link]=AND&criteria[1][field]=12&criteria[1][searchtype]=equals&criteria[1][value]={{ $json.statusToSearch }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "App-Token",
+              "value": "={{ $('Autenticação2').first().json.APP_TOKEN_GLPI }}"
+            },
+            {
+              "name": "Session-Token",
+              "value": "={{ $('Auth (BugBusters)').first().json.session_token }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "77d4afba-dfef-41b5-9420-c246e4efb5c0",
+      "name": "GLPI Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2944,
+        208
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "statusToSearch",
+        "options": {}
+      },
+      "id": "982e4b63-985a-4c90-8531-51d3788057f7",
+      "name": "Organizador de status",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -3168,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s-list",
+              "name": "statusToSearch",
+              "value": "={{ $('Autenticação').first().json.Status === '10' ? [1,2,3,4] : ($('Autenticação2').first().json.Status.toString().includes(',') ? $('Autenticação2').first().json.Status.split(',') : [$('Autenticação').first().json.Status]) }}",
+              "type": "array"
+            },
+            {
+              "id": "s-tok",
+              "name": "sessionToken",
+              "value": "={{ $json.session_token }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e1aff140-db58-4fa9-893e-8703ff1599b1",
+      "name": "Preparador de dados2",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3408,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Autenticação').first().json.urlAPI }}/apirest.php/initSession ",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "App-Token",
+              "value": "={{ $json.APP_TOKEN_GLPI }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"login\": \"{{ $json.Login_GLPI }}\",\n  \"password\": \"{{ $json.Senha_GLPI }}\"\n}",
+        "options": {}
+      },
+      "id": "bbbb74b1-92a2-4b84-a08a-007fa868ae3b",
+      "name": "Auth (BugBusters)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3632,
+        224
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2338c700-67e0-4d6a-8a32-b04545f1d515",
+              "name": "URLAUXILIAR",
+              "value": "={{ $('Autenticação').first().json.urlAPI }}",
+              "type": "string"
+            },
+            {
+              "id": "st",
+              "name": "Status",
+              "value": "={{ $json.Status || '10' }}",
+              "type": "string"
+            },
+            {
+              "id": "log",
+              "name": "Login_GLPI",
+              "value": "={{ $('Autenticação').first().json.Login_GLPI }}",
+              "type": "string"
+            },
+            {
+              "id": "pwd",
+              "name": "Senha_GLPI",
+              "value": "={{ $('Autenticação').first().json.Senha_GLPI }}",
+              "type": "string"
+            },
+            {
+              "id": "tok",
+              "name": "APP_TOKEN_GLPI",
+              "value": "={{ $('Autenticação').first().json.APP_TOKEN_GLPI }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2613ec5a-3d28-42b2-9788-ea0c88750b9e",
+      "name": "Autenticação2",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3872,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Criamos objetos vazios para acumular os dados de todas as execuções\nlet allData = {};\nlet allDataHtml = {};\nlet totalCountGeral = 0;\n\n// O segredo está aqui: percorrer TODOS os itens que entraram no nó\nfor (const item of $input.all()) {\n  const payload = item.json;\n  totalCountGeral += parseInt(payload.totalcount || 0);\n  if (payload.data) {\n    Object.assign(allData, payload.data);\n  }\n  if (payload.data_html) {\n    Object.assign(allDataHtml, payload.data_html);\n  }\n}\n\nreturn {\n  totalcount: totalCountGeral,\n  data: allData,\n  data_html: allDataHtml\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2672,
+        192
+      ],
+      "id": "19ea61ad-6148-4b71-831f-f0d3aa580017",
+      "name": "Iterador de todos os status de chamado"
+    },
+    {
+      "parameters": {
+        "jsCode": "let allTickets = [];\nlet totalCount = 0;\n\nconst statusInput = $(\"Autenticação2\").first().json.Status;\nconst tipoDeChamado = parseInt(statusInput);\n\nconst superClean = (html) => {\n  if (!html || typeof html !== 'string') return \"\";\n  return html\n    .replace(/<style[^>]*>[\\s\\S]*?<\\/style>/gi, '')\n    .replace(/<script[^>]*>[\\s\\S]*?<\\/script>/gi, '')\n    .replace(/<[^>]*>?/gm, '')\n    .replace(/&nbsp;/g, ' ')\n    .replace(/&quot;/g, '\"')\n    .replace(/&lt;/g, '<')\n    .replace(/&gt;/g, '>')\n    .replace(/&amp;/g, '&')\n    .replace(/&#\\d+;/g, (match) => String.fromCharCode(match.match(/\\d+/)[0]))\n    .replace(/\\s+/g, ' ')\n    .trim();\n};\n\nconst extractUserInfo = (html) => {\n  if (!html) return { nome: '', email: '', telefone: '' };\n  const nomeMatch = html.match(/^([^<]+)/);\n  const emailMatch = html.match(/mailto:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})/);\n  const telMatch = html.match(/tel:([^\"'>\\s]+)/);\n  return {\n    nome: nomeMatch ? nomeMatch[1].trim() : '',\n    email: emailMatch ? emailMatch[1] : '',\n    telefone: telMatch ? telMatch[1] : ''\n  };\n};\n\nfor (const item of $input.all()) {\n  const payload = item.json;\n  let source = payload.data?.[0]?.data ? payload.data[0] : (payload.data?.data ? payload.data : payload);\n\n  if (source && source.data) {\n    const ticketsData = source.data;\n    const ticketsHtml = source.data_html || {};\n\n    Object.keys(ticketsData).forEach(ticketId => {\n      if (!isNaN(ticketId)) {\n        const ticket = ticketsData[ticketId];\n        const ticketHtml = ticketsHtml[ticketId] || {};\n        const catRaw = superClean(ticketHtml[7] || ticket[7] || \"Sem Categoria\");\n        const categoriasExcluir = [\"sem categoria\", \"aberto por e-mail\", \"null\"];\n        if (categoriasExcluir.includes(catRaw.toLowerCase()) || catRaw === \"\" || catRaw === null) return;\n\n        const rawContent = ticketHtml[21] || ticket[21] || \"\";\n        const reqInfo = extractUserInfo(ticketHtml[4] || \"\");\n\n        let ticketObj = {\n          id: ticket[2],\n          requerente_nome: reqInfo.nome,\n          requerente_email: reqInfo.email,\n          requerente_tel: reqInfo.telefone,\n          titulo: superClean(ticket[1]),\n          categoria: catRaw,\n          urgencia: ticket[3] || 0,\n          descricao_inicial: superClean(rawContent),\n          status_name: superClean(ticketHtml[12] || `Status ${ticket[12]}`),\n          data_abertura: ticket[15],\n          entidade: ticket[80]\n        };\n\n        if (tipoDeChamado !== 1) {\n          const tecInfo = extractUserInfo(ticketHtml[5] || \"\");\n          ticketObj.tecnicoAtribuido = tecInfo.nome || \"Não atribuído\";\n        } else {\n          ticketObj.tecnicoAtribuido = \"Não atribuído\";\n        }\n\n        allTickets.push(ticketObj);\n      }\n    });\n  }\n}\n\ntotalCount = allTickets.length;\n\nreturn {\n  tipoDeChamado,\n  total_tickets_found: totalCount,\n  all_tickets: allTickets\n};"
+      },
+      "id": "cdcb7254-f045-4558-98cb-28c1b15f361d",
+      "name": "Formatador dos chamados",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2448,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Autenticação').first().json.urlMCP }}/entidades-config",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2240,
+        192
+      ],
+      "id": "74cf28e6-148d-4547-8a72-a2fa2b7caff2",
+      "name": "Matriz de prioridade"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Autenticação').first().json.urlMCP }}/users",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2032,
+        192
+      ],
+      "id": "7c161907-35c9-4af7-9639-a95dcf6335d2",
+      "name": "Cargos técnicos",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputTickets = $(\"Formatador dos chamados\").first().json;\nconst listaDeTickets = inputTickets.all_tickets || [];\nconst atribuidosGeral = listaDeTickets.filter(c => c.status_name && c.status_name.includes(\"Em atendimento (atribuído)\"));\nconst pendentesGeral = listaDeTickets.filter(c => c.status_name && c.status_name.includes(\"Pendente\"));\nconst planejadosGeral = listaDeTickets.filter(c => c.status_name && c.status_name.includes(\"Em atendimento (planejado)\"));\n\nconst tecnicosRaw = $(\"Cargos técnicos\").all();\nconst normalizar = (texto) => texto ? texto.trim().toLowerCase() : \"\";\n\nreturn tecnicosRaw.map(t => {\n  const itemBase = t.json.fila && t.json.fila.json ? t.json.fila.json : t.json;\n  const nomeTecnico = itemBase.nome;\n  if (!nomeTecnico) return null;\n  const nomeTecnicoNorm = normalizar(nomeTecnico);\n\n  const atribuidos = atribuidosGeral.filter(c => normalizar(c.tecnicoAtribuido) === nomeTecnicoNorm);\n  const pendentes = pendentesGeral.filter(c => normalizar(c.tecnicoAtribuido) === nomeTecnicoNorm);\n  const planejados = planejadosGeral.filter(c => normalizar(c.tecnicoAtribuido) === nomeTecnicoNorm);\n\n  return {\n    idTecnico: itemBase._id,\n    nomeDeTecnico: nomeTecnico,\n    entidade: itemBase.entidade,\n    estatisticas: {\n      totalPendentes: pendentes.length,\n      totalAtribuidos: atribuidos.length,\n      totalPlanejados: planejados.length,\n      totalGeral: pendentes.length + atribuidos.length + planejados.length\n    },\n    competencias: itemBase.cargo && itemBase.cargo.competencias ? itemBase.cargo.competencias.map(comp => comp.completename) : []\n  };\n}).filter(item => item !== null).sort((a, b) => a.estatisticas.totalGeral - b.estatisticas.totalGeral);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1824,
+        192
+      ],
+      "id": "987cc5f9-b0ab-433a-9dc2-59b067cde9ef",
+      "name": "Organiza a lista dos tecnicos"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputTickets = $(\"Formatador dos chamados\").first().json;\nconst listaDeTickets = inputTickets.all_tickets || [];\nconst novosFiltrados = listaDeTickets.filter(c => {\n  const statusOk = c.status_name && c.status_name.toLowerCase().includes(\"novo\");\n  const categoriasExcluir = [\"sem categoria\", \"aberto por e-mail\", \"null\", null];\n  const categoriaValida = c.categoria && !categoriasExcluir.includes(c.categoria.toLowerCase());\n  const tecnicoValido = c.tecnicoAtribuido === \"Não atribuído\";\n  return statusOk && categoriaValida && tecnicoValido;\n});\n\nconst matriz = $(\"Matriz de prioridade\").all().map(item => item.json);\n\nconst novosComPrioridade = novosFiltrados.map(chamado => {\n  const infoMatriz = matriz.find(m => m.nome === chamado.entidade);\n  return {\n    ...chamado,\n    prioridade: infoMatriz ? infoMatriz.prioridade : 0,\n    urgencia_num: parseInt(chamado.urgencia) || 0\n  };\n});\n\nreturn {\n  totalNovos: novosComPrioridade.length,\n  novosGeral: novosComPrioridade\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1616,
+        192
+      ],
+      "id": "f767467a-6cdc-47a7-a885-7a85f243f9e8",
+      "name": "Organiza a prioridade dos chamados"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "771a7b08-4b8e-4a36-8fc9-7fa780cddd92",
+              "leftValue": "={{ $json.atribuidos.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1200,
+        192
+      ],
+      "id": "278d1b31-d3e6-4e7f-91e0-8dc3c68adc34",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -928,
+        336
+      ],
+      "id": "6e0e1e20-df33-443a-a0a8-a4a7cb365d0f",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s-tok",
+              "name": "sessionToken",
+              "value": "={{ $json.session_token }}",
+              "type": "string"
+            },
+            {
+              "id": "cace7f87-f152-4e81-9ccd-96b879cf72d1",
+              "name": "atribuidos",
+              "value": "={{ $('Matriz de atribuição').first().json.atribuidos }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0c2ffc75-84a3-405b-84f0-380d9c96f877",
+      "name": "Preparador de dados",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -688,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Autenticação').first().json.urlAPI }}/apirest.php/initSession ",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "App-Token",
+              "value": "={{ $('Autenticação').first().json.APP_TOKEN_GLPI }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"login\": \"{{ $('Autenticação').first().json.Login_GLPI }}\",\n  \"password\": \"{{ $('Autenticação').first().json.Senha_GLPI }}\"\n}",
+        "options": {}
+      },
+      "id": "768b91d8-d93e-457b-8c53-8aacc121b199",
+      "name": "Auth (BugBusters)1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -912,
+        32
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const filaTecnicos = $('Organiza a lista dos tecnicos').all();\nconst listaChamadosNode = $('Organiza a prioridade dos chamados').all();\n\n// --- CONFIGURAÇÕES DE TEMPO ---\nconst TEMPO_URG_PRIO_5 = 10;\nconst TEMPO_URG_PRIO_4 = 30;\n\nlet novosChamados = listaChamadosNode[0].json.novosGeral;\nconst tecnicos = filaTecnicos.map(t => t.json);\nconst atribuidos = [];\nconst dataAtual = new Date();\n\n// 1. REINTRODUÇÃO DA ORDENAÇÃO: Nível (Prio/Urg) + Antiguidade\nnovosChamados.sort((a, b) => {\n    const nivelA = Math.max(a.prioridade || 0, a.urgencia_num || 0);\n    const nivelB = Math.max(b.prioridade || 0, b.urgencia_num || 0);\n    if (nivelB !== nivelA) return nivelB - nivelA;\n    return new Date(a.data_abertura) - new Date(b.data_abertura);\n});\n\n// 2. PROCESSAMENTO COM AS REGRAS COMPLETAS\nnovosChamados.forEach(chamado => {\n    let designado = null;\n    const dataAbertura = new Date(chamado.data_abertura);\n    const diffMinutos = Math.floor((dataAtual - dataAbertura) / 60000);\n\n    // Filtro de competência e entidade (mantendo sua lógica simplificada)\n    const compativeis = tecnicos.filter(t => \n        t.competencias.includes(chamado.categoria) && \n        (t.entidade === \"Raiz\" || t.entidade === chamado.entidade)\n    );\n\n    for (const t of compativeis) {\n        const totalAtrib = t.estatisticas.totalAtribuidos;\n        \n        // Definição dos gatilhos de tempo para cada nível\n        const eNivel5Atrasado = (chamado.prioridade === 5 || chamado.urgencia_num === 5) && diffMinutos >= TEMPO_URG_PRIO_5;\n        const eNivel4Atrasado = (chamado.prioridade === 4 || chamado.urgencia_num === 4) && diffMinutos >= TEMPO_URG_PRIO_4;\n\n        // Regra de carga: 0 atribuições OU (Menos de 2 e respeitando os tempos de Prio 4/5)\n        if (totalAtrib === 0 || (totalAtrib < 2 && (eNivel5Atrasado || eNivel4Atrasado))) {\n            designado = t;\n            t.estatisticas.totalAtribuidos++;\n            break;\n        }\n    }\n\n    if (designado) {\n        atribuidos.push({\n            id: chamado.id,\n            idTecnico: designado.idTecnico,\n            titulo: chamado.titulo,\n            entidade: chamado.entidade\n        });\n    }\n});\n\nreturn { atribuidos: atribuidos };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1408,
+        192
+      ],
+      "id": "77b81ef2-3dcd-424c-97ef-19f490e6511b",
+      "name": "Matriz de atribuição"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "atribuidos",
+        "options": {}
+      },
+      "id": "4d22e9b0-a187-4b41-8377-1ae224418acf",
+      "name": "Organizador de chamados",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Autenticação').first().json.urlAPI }}/apirest.php/Ticket/{{ $json.id }}/Ticket_User/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "App-Token",
+              "value": "={{ $('Autenticação').first().json.APP_TOKEN_GLPI }}"
+            },
+            {
+              "name": "Session-Token",
+              "value": "={{ $('Preparador de dados').first().json.sessionToken }}"
+            },
+            {
+              "name": "Set-ID-Entity",
+              "value": "0"
+            },
+            {
+              "name": "Is-Recursive",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"input\": {\n    \"tickets_id\": {{ $json.id }},\n    \"users_id\": {{ $json.idTecnico }},\n    \"type\": 2\n  }\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "59931302-7d18-450c-8b75-c317283eba92",
+      "name": "Atribuir a técnico",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -272,
+        16
+      ],
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Autenticação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Autenticação": {
+      "main": [
+        [
+          {
+            "node": "Autenticação2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Autenticação2": {
+      "main": [
+        [
+          {
+            "node": "Auth (BugBusters)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auth (BugBusters)": {
+      "main": [
+        [
+          {
+            "node": "Preparador de dados2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparador de dados2": {
+      "main": [
+        [
+          {
+            "node": "Organizador de status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Organizador de status": {
+      "main": [
+        [
+          {
+            "node": "GLPI Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GLPI Search": {
+      "main": [
+        [
+          {
+            "node": "Iterador de todos os status de chamado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Iterador de todos os status de chamado": {
+      "main": [
+        [
+          {
+            "node": "Formatador dos chamados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatador dos chamados": {
+      "main": [
+        [
+          {
+            "node": "Matriz de prioridade",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Matriz de prioridade": {
+      "main": [
+        [
+          {
+            "node": "Cargos técnicos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cargos técnicos": {
+      "main": [
+        [
+          {
+            "node": "Organiza a lista dos tecnicos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Organiza a lista dos tecnicos": {
+      "main": [
+        [
+          {
+            "node": "Organiza a prioridade dos chamados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Organiza a prioridade dos chamados": {
+      "main": [
+        [
+          {
+            "node": "Matriz de atribuição",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Matriz de atribuição": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Auth (BugBusters)1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auth (BugBusters)1": {
+      "main": [
+        [
+          {
+            "node": "Preparador de dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparador de dados": {
+      "main": [
+        [
+          {
+            "node": "Organizador de chamados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Organizador de chamados": {
+      "main": [
+        [
+          {
+            "node": "Atribuir a técnico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atribuir a técnico": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "1f7132f1-ef01-47a5-ab03-8cb93c7334bb",
+  "meta": {
+    "instanceId": "ffbfdf3ce47a1842904b0b0985b8b2ed9db91162ebc2fde867186855e3669ffe"
+  },
+  "id": "J7t_mtFeb5M4RagIbgUf3",
+  "tags": []
+}

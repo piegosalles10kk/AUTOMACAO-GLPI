@@ -1,29 +1,28 @@
-// services/glpiAuthService.js
-
+// src/services/glpiAuthService.js
 const axios = require('axios');
-const querystring = require('querystring');
-
-const GLPI_API_URL = 'https://chamados.bugbusters.me/apirest.php/';
-const GLPI_APP_TOKEN = 'rNkCgKqtRIfBmY2mVi3zXOhPSXvkYPGSDh4sIuPe';
-const GLPI_USER_LOGIN = 'diego.teixeira';
-const GLPI_USER_PASSWORD = 'Diego1310';
-
+const { Config } = require('../models/config');
 
 const getSessionToken = async () => {
   try {
-    const url = `${GLPI_API_URL}initSession`;
+    // Buscar configurações do banco
+    const config = await Config.findOne({ tipo: 'glpi', ativo: true });
+    
+    if (!config) {
+      throw new Error('Configurações GLPI não encontradas. Configure o sistema primeiro.');
+    }
+
+    const url = `${config.glpi_url}/initSession`;
     const headers = {
       'Content-Type': 'application/json',
-      'App-Token': GLPI_APP_TOKEN,
+      'App-Token': config.glpi_app_token,
     };
     const body = {
-      login: GLPI_USER_LOGIN,
-      password: GLPI_USER_PASSWORD,
+      login: config.glpi_user_login,
+      password: config.glpi_user_password,
     };
 
     const response = await axios.post(url, body, { headers });
 
-    // A resposta da API contém o Session-Token
     const sessionToken = response.data.session_token;
 
     if (!sessionToken) {
@@ -38,4 +37,13 @@ const getSessionToken = async () => {
   }
 };
 
-module.exports = { getSessionToken };
+// Função auxiliar para obter configurações
+const getGlpiConfig = async () => {
+  const config = await Config.findOne({ tipo: 'glpi', ativo: true });
+  if (!config) {
+    throw new Error('Configurações GLPI não encontradas');
+  }
+  return config;
+};
+
+module.exports = { getSessionToken, getGlpiConfig };

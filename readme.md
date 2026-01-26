@@ -151,7 +151,7 @@ O **MCP BugBusters** é uma plataforma enterprise de automação de service desk
 ### 1. Clone o Repositório
 
 ```bash
-git clone <url-do-repositorio>
+git clone https://github.com/piegosalles10kk/AUTOMACAO-GLPI
 cd N8N-PROD
 ```
 

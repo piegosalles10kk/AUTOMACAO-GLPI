@@ -280,7 +280,7 @@ Altera senha do usuário.
 ### Base URL
 
 ```
-http://172.16.50.19:2500/api
+http://localhost:2500/api
 ```
 
 ### Autenticação nas Requisições
@@ -764,7 +764,7 @@ SAÍDA (JSON puro, sem markdown):
 ### Acesso
 
 ```
-URL: http://172.16.50.19:2500
+URL: http://localhost:2500
 Login: admin
 Senha: Bug*0000
 ```
@@ -1253,7 +1253,7 @@ pm2 restart all
 
 ```
 # Dashboard Web
-URL: http://172.16.50.19:2500
+URL: http://localhost:2500
 Login: admin
 Senha: Bug*0000 (ALTERAR!)
 

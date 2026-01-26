@@ -43,7 +43,6 @@ function checkAuthentication() {
         if (userProfile) {
             userProfile.innerHTML = `
                 <span class="admin-badge">${userData.role}</span>
-                <span style="margin-right: 10px;">${userData.nome}</span>
                 <div class="avatar"><i class="bi bi-person-circle"></i></div>
             `;
         }
@@ -148,7 +147,7 @@ async function saveGlpiConfig(e) {
 async function testGlpiConnection() {
     const btn = document.getElementById('btn-test-glpi');
     btn.disabled = true;
-    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Testando...';
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> <span>Testando...</span>';
     
     const payload = {
         glpi_url: document.getElementById('config-glpi-url').value.trim(),
@@ -175,7 +174,7 @@ async function testGlpiConnection() {
         showConfigStatus('✗ Erro ao testar conexão', 'error');
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-wifi"></i> Testar Conexão';
+        btn.innerHTML = '<i class="bi bi-wifi"></i> <span>Testar Conexão</span>';
     }
 }
 
@@ -252,23 +251,34 @@ async function changePassword(e) {
 // ==================== NAVEGAÇÃO ====================
 
 function initNavigation() {
-    const navItems = document.querySelectorAll('.sidebar nav ul li');
+    const navItems = document.querySelectorAll('.nav-item');
     const sections = document.querySelectorAll('.content-section');
+    const pageTitle = document.getElementById('page-title');
+    
+    const pageTitles = {
+        'dash': 'Dashboard',
+        'users': 'Técnicos',
+        'cargos': 'Cargos',
+        'entidades': 'Entidades',
+        'config': 'Configurações',
+        'glpi': 'Sincronização GLPI'
+    };
 
     navItems.forEach(item => {
-        // Ignorar o item de logout
-        if (item.id === 'btn-logout') return;
-        
         item.addEventListener('click', () => {
             const target = item.getAttribute('data-target');
-            navItems.forEach(i => {
-                if (i.id !== 'btn-logout') i.classList.remove('active');
-            });
+            
+            navItems.forEach(i => i.classList.remove('active'));
             item.classList.add('active');
+            
             sections.forEach(s => {
                 s.classList.remove('active');
                 if (s.id === target) s.classList.add('active');
             });
+            
+            if (pageTitle && pageTitles[target]) {
+                pageTitle.textContent = pageTitles[target];
+            }
 
             if (target === 'users') loadUsers();
             if (target === 'cargos') loadCargos();
@@ -301,7 +311,7 @@ async function loadDashboardData() {
 
 async function loadEntidades() {
     const tbody = document.getElementById('table-entidades-body');
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">Carregando entidades do GLPI...</td></tr>';
+    tbody.innerHTML = '<tr class="loading-row"><td colspan="4" class="text-center">Carregando entidades do GLPI...</td></tr>';
     
     try {
         const [resGlpi, resLocal] = await Promise.all([
@@ -321,19 +331,19 @@ async function loadEntidades() {
                 <tr>
                     <td>${ent.id}</td>
                     <td><strong>${ent.nome}</strong></td>
-                    <td style="text-align: center;">
+                    <td class="text-center">
                         <span class="badge-priority ${badgeClass}">${prioridade}</span>
                     </td>
-                    <td style="text-align: center;">
+                    <td class="text-center">
                         <button onclick='openPriorityModal(${JSON.stringify(ent)}, ${JSON.stringify(configLocal || null)})' class="btn-action edit">
-                            <i class="bi bi-gear-fill"></i> Configurar
+                            <i class="bi bi-gear-fill"></i>
                         </button>
                     </td>
                 </tr>
             `;
         }).join('');
     } catch (err) { 
-        tbody.innerHTML = '<tr><td colspan="5">Erro ao carregar entidades.</td></tr>'; 
+        tbody.innerHTML = '<tr><td colspan="4">Erro ao carregar entidades.</td></tr>'; 
     }
 }
 
@@ -405,7 +415,7 @@ async function loadUsers() {
                 <td><span class="badge-glpi">${user.userNameGlpi}</span></td>
                 <td>${user.cargo ? user.cargo.nome : '<span class="text-danger">Sem Cargo</span>'}</td>
                 <td>${user.telefone || '-'}</td>
-                <td>
+                <td class="text-center">
                     <div style="display: flex; gap: 8px; justify-content: center;">
                         <button onclick="openEditUserModal('${user._id}')" class="btn-action edit" title="Editar">
                             <i class="bi bi-pencil-square"></i>
@@ -491,10 +501,10 @@ async function loadCargos() {
                 <div class="card-header">
                     <h3>${cargo.nome}</h3>
                     <div style="display: flex; gap: 5px;">
-                        <button onclick="openEditCargoModal('${cargo._id}')" class="btn-action edit" style="width: 30px; height: 30px; font-size: 0.8rem;">
+                        <button onclick="openEditCargoModal('${cargo._id}')" class="btn-action edit">
                             <i class="bi bi-pencil-square"></i>
                         </button>
-                        <button onclick="deleteCargo('${cargo._id}')" class="btn-action delete-sm">
+                        <button onclick="deleteCargo('${cargo._id}')" class="delete-sm">
                             <i class="bi bi-x-lg"></i>
                         </button>
                     </div>
@@ -612,7 +622,7 @@ async function deleteCargo(id) {
 
 async function loadGlpiData() {
     const tbody = document.getElementById('table-glpi-body');
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 40px;">Consultando GLPI...</td></tr>';
+    tbody.innerHTML = '<tr class="loading-row"><td colspan="4" class="text-center">Consultando GLPI...</td></tr>';
     try {
         const res = await fetch(`${API_BASE_URL}/glpi/tecnicos`);
         const tecs = await res.json();
@@ -621,7 +631,7 @@ async function loadGlpiData() {
                 <td>${t.nome} ${t.sobrenome}</td>
                 <td>${t.email || '-'}</td>
                 <td><small>${t.entidade}</small></td>
-                <td style="text-align: center;">
+                <td class="text-center">
                     <button class="btn-import-glpi" onclick='openImportModal(${JSON.stringify(t)})'>
                         <i class="bi bi-plus-circle"></i> Importar
                     </button>
@@ -691,14 +701,14 @@ const btnSyncCompetencias = document.getElementById('sync-competencias');
 if (btnSyncCompetencias) {
     btnSyncCompetencias.onclick = async () => {
         btnSyncCompetencias.disabled = true;
-        btnSyncCompetencias.innerHTML = '<i class="bi bi-hourglass-split"></i> Sincronizando...';
+        btnSyncCompetencias.innerHTML = '<i class="bi bi-hourglass-split"></i> <span>Sincronizando...</span>';
         try {
             await fetch(`${API_BASE_URL}/competencias/sync`);
             alert("Competências sincronizadas com sucesso!");
             document.getElementById('last-sync').innerText = new Date().toLocaleDateString();
         } finally {
             btnSyncCompetencias.disabled = false;
-            btnSyncCompetencias.innerHTML = '<i class="bi bi-arrow-repeat"></i> Sincronizar Categorias ITIL';
+            btnSyncCompetencias.innerHTML = '<i class="bi bi-arrow-repeat"></i> <span>Sincronizar</span>';
         }
     };
 }

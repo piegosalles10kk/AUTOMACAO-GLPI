@@ -294,16 +294,40 @@ function initNavigation() {
 
 async function loadDashboardData() {
     try {
+        // Carregar contadores de usuários, cargos e competências
         const [u, c, comp] = await Promise.all([
             fetch(`${API_BASE_URL}/users`).then(res => res.json()),
             fetch(`${API_BASE_URL}/cargos`).then(res => res.json()),
             fetch(`${API_BASE_URL}/competencias`).then(res => res.json())
         ]);
+        
         document.getElementById('count-users').innerText = u.length || 0;
         document.getElementById('count-cargos').innerText = c.length || 0;
         document.getElementById('count-comp').innerText = comp.length || 0;
+
+        // Carregar estatísticas de tickets
+        await loadTicketStats();
     } catch (err) { 
         console.error("Erro dashboard:", err); 
+    }
+}
+
+// Carregar estatísticas de tickets
+async function loadTicketStats() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/glpi/tickets/stats`);
+        const stats = await response.json();
+
+        document.getElementById('count-novos').innerText = stats.novos || 0;
+        document.getElementById('count-planejados').innerText = stats.planejados || 0;
+        document.getElementById('count-atribuidos').innerText = stats.atribuidos || 0;
+        document.getElementById('count-pendentes').innerText = stats.pendentes || 0;
+    } catch (err) {
+        console.error("Erro ao carregar estatísticas de tickets:", err);
+        document.getElementById('count-novos').innerText = '0';
+        document.getElementById('count-planejados').innerText = '0';
+        document.getElementById('count-atribuidos').innerText = '0';
+        document.getElementById('count-pendentes').innerText = '0';
     }
 }
 
@@ -411,7 +435,11 @@ async function loadUsers() {
         
         tbody.innerHTML = users.map(user => `
             <tr>
-                <td><strong>${user.nome}</strong></td>
+                <td>
+                    <a href="/tech-stats.html?id=${user._id}&name=${encodeURIComponent(user.nome)}" class="tech-link">
+                        <strong>${user.nome}</strong>
+                    </a>
+                </td>
                 <td><span class="badge-glpi">${user.userNameGlpi}</span></td>
                 <td>${user.cargo ? user.cargo.nome : '<span class="text-danger">Sem Cargo</span>'}</td>
                 <td>${user.telefone || '-'}</td>
@@ -624,9 +652,27 @@ async function loadGlpiData() {
     const tbody = document.getElementById('table-glpi-body');
     tbody.innerHTML = '<tr class="loading-row"><td colspan="4" class="text-center">Consultando GLPI...</td></tr>';
     try {
-        const res = await fetch(`${API_BASE_URL}/glpi/tecnicos`);
-        const tecs = await res.json();
-        tbody.innerHTML = tecs.map(t => `
+        // Buscar técnicos do GLPI e usuários já cadastrados
+        const [resGlpi, resLocal] = await Promise.all([
+            fetch(`${API_BASE_URL}/glpi/tecnicos`),
+            fetch(`${API_BASE_URL}/users`)
+        ]);
+        
+        const tecsGlpi = await resGlpi.json();
+        const usersLocal = await resLocal.json();
+        
+        // Criar Set com IDs dos usuários já cadastrados
+        const cadastradosIds = new Set(usersLocal.map(u => u._id));
+        
+        // Filtrar apenas técnicos não cadastrados
+        const tecsNaoCadastrados = tecsGlpi.filter(t => !cadastradosIds.has(t.id));
+        
+        if (tecsNaoCadastrados.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center">Todos os técnicos do GLPI já estão cadastrados no sistema.</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = tecsNaoCadastrados.map(t => `
             <tr>
                 <td>${t.nome} ${t.sobrenome}</td>
                 <td>${t.email || '-'}</td>
@@ -685,6 +731,7 @@ if (formUser) {
             if(res.ok) {
                 closeModal('modal-user');
                 loadUsers();
+                loadGlpiData(); // Recarregar lista de técnicos disponíveis
                 loadDashboardData();
             } else {
                 const errorData = await res.json();

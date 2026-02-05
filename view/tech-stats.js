@@ -322,11 +322,11 @@ function updateInsights(data) {
     document.getElementById('dominant-category').textContent = displayCategory;
     document.getElementById('dominant-category').title = dominantCategory; // Tooltip com nome completo
 
-    // 3. Produtividade (últimos 365 dias)
+    // 3. Produtividade (últimos 252 dias uteis)
     const yearCount = data.finalizadosCount.year || 0;
     
-    // Média diária nos últimos 365 dias
-    const dailyAvg = (yearCount / 365).toFixed(1);
+    // Média diária nos últimos 252 dias uteis
+    const dailyAvg = (yearCount / 252).toFixed(1);
     
     document.getElementById('productivity').textContent = `${yearCount} tickets (${dailyAvg}/dia)`;
 }

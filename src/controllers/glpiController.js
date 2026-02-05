@@ -1,8 +1,16 @@
 const { getSessionToken } = require('../services/glpiAuthService');
+const { Config } = require('../models/config');
 const axios = require('axios');
 
-// Configurações fixas
-const GLPI_APP_TOKEN = 'rNkCgKqtRIfBmY2mVi3zXOhPSXvkYPGSDh4sIuPe';
+
+
+// Função auxiliar para buscar a configuração
+const fetchGlpiConfig = async () => {
+    const config = await Config.findOne({ tipo: 'glpi' });
+    if (!config) throw new Error("Configurações do GLPI não encontradas no banco de dados.");
+    return config;
+};        
+
 
 /**
  * Consulta apenas usuários com perfil técnico (Proxy)
@@ -10,7 +18,10 @@ const GLPI_APP_TOKEN = 'rNkCgKqtRIfBmY2mVi3zXOhPSXvkYPGSDh4sIuPe';
 exports.getGlpiTechnicians = async (req, res) => {
     try {
         const sessionToken = await getSessionToken();
-        const baseUrl = `https://chamados.bugbusters.me/apirest.php/search/User`;
+
+        const config = await fetchGlpiConfig();
+        const { glpi_url: URL, glpi_app_token: GLPI_APP_TOKEN } = config;
+        const baseUrl = `${URL}/search/User`;
         
         const params = new URLSearchParams({
             'criteria[0][field]': '20',      
@@ -62,7 +73,9 @@ exports.getGlpiTechnicians = async (req, res) => {
 exports.getGlpiCategories = async (req, res) => {
     try {
         const sessionToken = await getSessionToken();
-        const url = `https://chamados.bugbusters.me/apirest.php/ITILCategory?range=0-999&is_recursive=true`;
+        const config = await fetchGlpiConfig();
+        const { glpi_url: URL, glpi_app_token: GLPI_APP_TOKEN } = config;
+        const url = `${URL}/ITILCategory?range=0-999&is_recursive=true`;
 
         const response = await axios.get(url, {
             headers: {
@@ -87,9 +100,11 @@ exports.getGlpiCategories = async (req, res) => {
 exports.getGlpiEntities = async (req, res) => {
     try {
         const sessionToken = await getSessionToken();
+        const config = await fetchGlpiConfig();
+        const { glpi_url: URL, glpi_app_token: GLPI_APP_TOKEN } = config;
 
         // URL fornecida para busca de Entidades
-        const url = `https://chamados.bugbusters.me/apirest.php/Entity?range=0-999`;
+        const url = `${URL}/Entity?range=0-999`;
 
         const response = await axios.get(url, {
             headers: {
@@ -122,7 +137,9 @@ exports.getGlpiEntities = async (req, res) => {
 exports.getTicketStats = async (req, res) => {
     try {
         const sessionToken = await getSessionToken();
-        const baseUrl = `https://chamados.bugbusters.me/apirest.php/search/Ticket`;
+        const config = await fetchGlpiConfig();
+        const { glpi_url: URL, glpi_app_token: GLPI_APP_TOKEN } = config;
+        const baseUrl = `${URL}/search/Ticket`;
 
         // Status: 1=Novo, 2=Em atendimento (Atribuído), 3=Planejado, 4=Pendente
         const statusQueries = [
@@ -169,9 +186,13 @@ exports.getTicketStats = async (req, res) => {
  */
 exports.getTechnicianStats = async (req, res) => {
     try {
+        
+
         const { technicianId } = req.params;
         const sessionToken = await getSessionToken();
-        const baseUrl = `https://chamados.bugbusters.me/apirest.php/search/Ticket`;
+        const config = await fetchGlpiConfig();
+        const { glpi_url: URL, glpi_app_token: GLPI_APP_TOKEN } = config;
+        const baseUrl = `${URL}/search/Ticket`;
 
         console.log(`\n========================================`);
         console.log(`Buscando estatísticas do técnico ID: ${technicianId}`);

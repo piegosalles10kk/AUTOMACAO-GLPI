@@ -14,9 +14,11 @@ const Competencia = mongoose.model('Competencia', CompetenciasSchema);
 const CargoSchema = new mongoose.Schema({
     nome: { type: String, required: true, unique: true },
     descricao: { type: String },
+    chamadosMaximos: { type: Number },
+    chamadosMaximosEvasao: { type: Number },
     competencias: [{ 
         type: Number, 
-        ref: 'Competencia' 
+        ref: 'Competencia'
     }]
 }, { versionKey: false, timestamps: true });
 

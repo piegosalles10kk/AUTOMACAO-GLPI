@@ -524,6 +524,7 @@ async function loadCargos() {
         const response = await fetch(`${API_BASE_URL}/cargos`);
         const cargos = await response.json();
         const container = document.getElementById('cargos-container');
+        
         container.innerHTML = cargos.map(cargo => `
             <div class="card-cargo">
                 <div class="card-header">
@@ -537,7 +538,18 @@ async function loadCargos() {
                         </button>
                     </div>
                 </div>
+
+                <div class="cargo-limits" style="margin: 10px 0; font-size: 0.85rem; color: #666;">
+                    <div title="Limite de chamados simultâneos">
+                        <i class="bi-graph-up-arrow"></i> Limite de chamados atribuidos: <strong>${cargo.chamadosMaximos || 0}</strong>
+                    </div>
+                    <div title="Limite em regime de evasão">
+                        <i class="bi-shield-exclamation"></i> Limite em regime de evasão: <strong>${cargo.chamadosMaximosEvasao || 0}</strong>
+                    </div>
+                </div>
+                
                 <p>${cargo.descricao || 'Sem descrição definida.'}</p>
+
                 <div class="comp-list">
                     ${cargo.competencias.map(c => `<span>${c.name}</span>`).join('')}
                 </div>
@@ -565,20 +577,41 @@ const formCargo = document.getElementById('form-cargo');
 if (formCargo) {
     formCargo.onsubmit = async (e) => {
         e.preventDefault();
-        const selected = Array.from(document.querySelectorAll('input[name="comp"]:checked')).map(cb => Number(cb.value));
+        
+        // Captura de competências (mantendo sua lógica original)
+        const selected = Array.from(document.querySelectorAll('input[name="comp"]:checked'))
+                              .map(cb => Number(cb.value));
+        
+        // Montagem do payload com os novos campos
         const data = {
             nome: document.getElementById('cargo-nome').value,
             descricao: document.getElementById('cargo-desc').value,
+            // Capturando os novos IDs
+            chamadosMaximos: Number(document.getElementById('cargo-max').value) || 0,
+            chamadosMaximosEvasao: Number(document.getElementById('cargo-max-evasao').value) || 0,
             competencias: selected
         };
-        await fetch(`${API_BASE_URL}/cargos`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        });
-        closeModal('modal-cargo');
-        loadCargos();
-        loadDashboardData();
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/cargos`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                closeModal('modal-cargo');
+                formCargo.reset(); // Limpa os campos após sucesso
+                loadCargos();
+                loadDashboardData();
+            } else {
+                const error = await res.json();
+                alert("Erro ao criar cargo: " + (error.message || "Erro desconhecido"));
+            }
+        } catch (err) {
+            console.error("Erro na requisição:", err);
+            alert("Erro de conexão com o servidor.");
+        }
     };
 }
 
@@ -594,6 +627,10 @@ window.openEditCargoModal = async (id) => {
         document.getElementById('edit-cargo-id').value = cargo._id;
         document.getElementById('edit-cargo-nome').value = cargo.nome;
         document.getElementById('edit-cargo-desc').value = cargo.descricao || '';
+        
+        // Preenchendo os novos campos no modal de edição
+        document.getElementById('edit-cargo-max').value = cargo.chamadosMaximos || 0;
+        document.getElementById('edit-cargo-max-evasao').value = cargo.chamadosMaximosEvasao || 0;
 
         const idsPossuidos = cargo.competencias.map(c => c._id);
         const container = document.getElementById('edit-lista-competencias');
@@ -611,6 +648,7 @@ window.openEditCargoModal = async (id) => {
 };
 
 const formEditCargo = document.getElementById('form-edit-cargo');
+// Localize o formEditCargo.onsubmit no seu script.js e atualize o payload:
 if (formEditCargo) {
     formEditCargo.onsubmit = async (e) => {
         e.preventDefault();
@@ -620,6 +658,9 @@ if (formEditCargo) {
         const payload = {
             nome: document.getElementById('edit-cargo-nome').value,
             descricao: document.getElementById('edit-cargo-desc').value,
+            // Certifique-se que estes IDs batem com o HTML acima
+            chamadosMaximos: Number(document.getElementById('edit-cargo-max').value) || 0,
+            chamadosMaximosEvasao: Number(document.getElementById('edit-cargo-max-evasao').value) || 0,
             competencias: selected
         };
 
@@ -632,7 +673,6 @@ if (formEditCargo) {
         if (res.ok) {
             closeModal('modal-edit-cargo');
             loadCargos();
-            loadUsers(); 
             loadDashboardData();
         }
     };

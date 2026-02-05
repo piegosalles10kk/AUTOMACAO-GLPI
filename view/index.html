@@ -435,6 +435,21 @@
                         <label>Nome do Cargo</label>
                         <input type="text" id="cargo-nome" placeholder="Ex: Analista N1" required>
                     </div>
+
+                    <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="cargo-max" style="display: block; margin-bottom: 5px; font-weight: 500; color: #475569; font-size: 0.9rem;">
+                            Chamados Máximos (Normal)
+                        </label>
+                        <input type="number" id="cargo-max" name="cargo-max" class="form-control" value="0" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label for="cargo-max-evasao" style="display: block; margin-bottom: 5px; font-weight: 500; color: #475569; font-size: 0.9rem;">
+                            Chamados Máximos (Evasão)
+                        </label>
+                        <input type="number" id="cargo-max-evasao" name="cargo-max-evasao" class="form-control" value="0" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    </div>
+                </div>
                     
                     <div class="form-group">
                         <label>Descrição</label>
@@ -472,6 +487,17 @@
                         <label>Nome do Cargo</label>
                         <input type="text" id="edit-cargo-nome" required>
                     </div>
+
+                    <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="edit-cargo-max" style="display: block; margin-bottom: 5px; font-weight: 500;">Chamados Máximos (Normal)</label>
+                        <input type="number" id="edit-cargo-max" class="form-control" style="width: 100%;">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label for="edit-cargo-max-evasao" style="display: block; margin-bottom: 5px; font-weight: 500;">Chamados Máximos (Evasão)</label>
+                        <input type="number" id="edit-cargo-max-evasao" class="form-control" style="width: 100%;">
+                    </div>
+                </div>
                     
                     <div class="form-group">
                         <label>Descrição</label>

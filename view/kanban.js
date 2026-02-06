@@ -4,6 +4,11 @@ let techniciansList = [];
 let dashboardConfig = null;
 let glpiBaseUrl = '';
 let autoRefreshInterval = null;
+let matrizPrioridades = []; // NOVO: Armazena matriz de prioridades das entidades
+
+// Constantes para cálculo de prioridade (baseado nos exemplos)
+const TEMPO_URG_PRIO_5 = 10; // minutos
+const TEMPO_URG_PRIO_4 = 30; // minutos
 
 document.addEventListener('DOMContentLoaded', () => {
     checkAuthentication();
@@ -52,6 +57,7 @@ async function loadDashboardConfig() {
         dashboardConfig = await response.json();
         if (dashboardConfig.glpi_url) glpiBaseUrl = dashboardConfig.glpi_url.replace('/apirest.php', '');
         await loadAllTechnicians();
+        await loadMatrizPrioridades(); // NOVO: Carregar matriz de prioridades
         await renderDashboard();
     } catch (error) {
         console.error('Erro ao carregar configuração:', error);
@@ -64,6 +70,18 @@ async function loadAllTechnicians() {
         techniciansList = await response.json();
     } catch (error) {
         console.error('Erro ao carregar técnicos:', error);
+    }
+}
+
+// NOVO: Carregar matriz de prioridades das entidades
+async function loadMatrizPrioridades() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/entidades-config`);
+        matrizPrioridades = await response.json();
+        console.log('📊 Matriz de prioridades carregada:', matrizPrioridades);
+    } catch (error) {
+        console.error('Erro ao carregar matriz de prioridades:', error);
+        matrizPrioridades = [];
     }
 }
 
@@ -119,7 +137,6 @@ async function createTechnicianCard(technician) {
     card.className = 'tech-summary-card';
     card.setAttribute('data-tech-id', technician._id);
     
-    // Tratamento para nomes com aspas simples para não quebrar o onclick
     const safeTechName = technician.nome.replace(/'/g, "\\'");
 
     card.innerHTML = `
@@ -176,6 +193,80 @@ async function loadTechnicianData(card, technician) {
     } catch (error) { console.error(error); }
 }
 
+// --- ALGORITMO DE PRIORIZAÇÃO DE TICKETS ---
+
+/**
+ * Busca a prioridade configurada para a entidade do ticket
+ */
+function obterPrioridadeEntidade(nomeEntidade) {
+    if (!nomeEntidade || !matrizPrioridades || matrizPrioridades.length === 0) {
+        return 0;
+    }
+    
+    const entidadeConfig = matrizPrioridades.find(e => e.nome === nomeEntidade);
+    return entidadeConfig ? entidadeConfig.prioridade : 0;
+}
+
+/**
+ * Calcula o nível de prioridade efetivo do ticket
+ * Considera: prioridade da entidade E urgência do ticket
+ */
+function calcularNivelPrioridade(ticket) {
+    const prioridadeEntidade = obterPrioridadeEntidade(ticket.entity);
+    const urgenciaTicket = ticket.priority || 0;
+    
+    // Retorna o MÁXIMO entre prioridade da entidade e urgência do ticket
+    const nivelFinal = Math.max(prioridadeEntidade, urgenciaTicket);
+    
+    return nivelFinal;
+}
+
+/**
+ * Verifica se o ticket está atrasado com base em sua prioridade/urgência
+ * Retorna informações sobre o atraso
+ */
+function verificarAtraso(ticket) {
+    if (!ticket.date) return { atrasado: false, diffMinutos: 0, tipo: null };
+    
+    const dataAbertura = new Date(ticket.date);
+    const dataAtual = new Date();
+    const diffMinutos = Math.floor((dataAtual - dataAbertura) / 60000);
+    
+    const nivelPrioridade = calcularNivelPrioridade(ticket);
+    
+    if (nivelPrioridade === 5 && diffMinutos >= TEMPO_URG_PRIO_5) {
+        return { atrasado: true, diffMinutos, tipo: 'CRÍTICO' };
+    }
+    if (nivelPrioridade === 4 && diffMinutos >= TEMPO_URG_PRIO_4) {
+        return { atrasado: true, diffMinutos, tipo: 'URGENTE' };
+    }
+    
+    return { atrasado: false, diffMinutos, tipo: null };
+}
+
+/**
+ * Ordena os tickets por prioridade (usando o algoritmo de fila)
+ * 1. Maior prioridade primeiro (max entre prioridade da entidade e urgência do ticket)
+ * 2. Em caso de empate, tickets mais antigos primeiro
+ */
+function ordenarTicketsPorPrioridade(tickets) {
+    return tickets.sort((a, b) => {
+        // 1. Ordenar por nível de prioridade (maior primeiro)
+        const nivelA = calcularNivelPrioridade(a);
+        const nivelB = calcularNivelPrioridade(b);
+        
+        if (nivelB !== nivelA) {
+            return nivelB - nivelA;
+        }
+        
+        // 2. Em caso de empate, ordenar por data de abertura (mais antigo primeiro)
+        const dataA = new Date(a.date || 0);
+        const dataB = new Date(b.date || 0);
+        
+        return dataA - dataB;
+    });
+}
+
 // --- SEÇÃO DE CHAMADOS NOVOS ---
 async function renderNewTicketsSection() {
     const container = document.getElementById('new-tickets-container');
@@ -185,11 +276,49 @@ async function renderNewTicketsSection() {
     try {
         const response = await fetch(`${API_BASE_URL}/tickets/new`);
         const data = await response.json();
-        if (countBadge) countBadge.textContent = data.total;
+        
+        // Processar tickets para adicionar informações de urgência
+        let tickets = data.tickets || [];
+        
+        // Adicionar campo urgencia_num baseado no priority (para compatibilidade)
+        tickets = tickets.map(ticket => ({
+            ...ticket,
+            urgencia_num: ticket.priority || 0
+        }));
+        
+        // Ordenar tickets usando o algoritmo de prioridade
+        const ticketsOrdenados = ordenarTicketsPorPrioridade(tickets);
+        
+        // Log para debug - DETALHADO
+        console.log(`\n📋 ========== PRIORIZAÇÃO DE TICKETS ==========`);
+        console.log(`Total de tickets novos: ${ticketsOrdenados.length}`);
+        console.log(`Matriz de prioridades carregada: ${matrizPrioridades.length} entidades\n`);
+        
+        ticketsOrdenados.forEach((t, index) => {
+            const prioridadeEntidade = obterPrioridadeEntidade(t.entity);
+            const urgenciaTicket = t.priority || 0;
+            const nivelFinal = calcularNivelPrioridade(t);
+            const atraso = verificarAtraso(t);
+            
+            console.log(`${index + 1}. Ticket #${t.id}:`);
+            console.log(`   └─ Entidade: "${t.entity}" → Prioridade: ${prioridadeEntidade}`);
+            console.log(`   └─ Urgência do ticket: ${urgenciaTicket}`);
+            console.log(`   └─ Nível final: ${nivelFinal} (max entre ${prioridadeEntidade} e ${urgenciaTicket})`);
+            console.log(`   └─ Atraso: ${atraso.atrasado ? `SIM (${atraso.tipo} - ${atraso.diffMinutos}min)` : 'NÃO'}\n`);
+        });
+        
+        console.log(`============================================\n`);
+        
+        if (countBadge) countBadge.textContent = ticketsOrdenados.length;
 
         container.innerHTML = '';
-        data.tickets?.forEach(ticket => container.appendChild(createTicketCard(ticket)));
-    } catch (error) { console.error(error); }
+        ticketsOrdenados.forEach(ticket => {
+            const card = createTicketCard(ticket);
+            container.appendChild(card);
+        });
+    } catch (error) { 
+        console.error('Erro ao carregar tickets novos:', error); 
+    }
 }
 
 function createTicketCard(ticket) {
@@ -201,12 +330,36 @@ function createTicketCard(ticket) {
     const categoryLabel = ticket.category || 'Geral';
     const cleanPreview = stripHtml(ticket.preview || 'Sem descrição');
     
+    // Verificar se está atrasado
+    const infoAtraso = verificarAtraso(ticket);
+    const nivelFinal = calcularNivelPrioridade(ticket);
+    const prioridadeEntidade = obterPrioridadeEntidade(ticket.entity);
+    
+    // Adicionar badge de atraso se aplicável
+    let badgeAtraso = '';
+    if (infoAtraso.atrasado) {
+        badgeAtraso = `<span class="ticket-delay-badge ${infoAtraso.tipo.toLowerCase()}">${infoAtraso.tipo}</span>`;
+    }
+    
+    // Adicionar informação da entidade se tiver prioridade configurada
+    let infoEntidade = '';
+    if (prioridadeEntidade > 0) {
+        const estrelas = '⭐'.repeat(prioridadeEntidade);
+        infoEntidade = `<div class="ticket-entity-info" title="Prioridade da entidade: ${prioridadeEntidade}">
+            <i class="bi bi-building"></i> ${ticket.entity} ${estrelas}
+        </div>`;
+    }
+    
     card.innerHTML = `
         <div class="ticket-card-header">
             <span class="ticket-id">#${ticket.id}</span>
-            <span class="ticket-priority ${priorityClass}">${getPriorityLabel(ticket.priority)}</span>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                ${badgeAtraso}
+                <span class="ticket-priority ${priorityClass}">${getPriorityLabel(ticket.priority)}</span>
+            </div>
         </div>
         <div class="ticket-title">${ticket.name || 'Sem título'}</div>
+        ${infoEntidade}
         <div class="ticket-body-container">
              <div class="ticket-preview">${cleanPreview}</div>
         </div>

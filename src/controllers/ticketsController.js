@@ -59,7 +59,7 @@ exports.getNewTickets = async (req, res) => {
                 category: ticket['7'] || 'Sem Categoria',
                 date: ticket['15'],
                 priority: ticket['3'],
-                entity: ticket['80']
+                entity: ticket['80'] // ATUALIZADO: Nome da entidade para cálculo de prioridade
             };
         });
 

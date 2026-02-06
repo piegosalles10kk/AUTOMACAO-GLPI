@@ -107,6 +107,12 @@
 
             <!-- Dashboard Section -->
             <section id="dash" class="content-section active">
+
+                <a href="/kanban.html" class="btn btn-primary">
+                    <i class="bi bi-kanban"></i>
+                    <span>Ir para Dashboard Kanban</span>
+                </a>
+
                 <!-- Cards de Sistema -->
                 <div class="stats-grid">
                     <div class="stat-card card-primary">
@@ -282,96 +288,124 @@
             </section>
 
             <!-- Config Section -->
-            <section id="config" class="content-section">
-                <div class="section-header">
-                    <div>
-                        <h2 class="section-title">Configurações do Sistema</h2>
-                        <p class="section-subtitle">Configure as credenciais e preferências</p>
+            <!-- Config Section ATUALIZADA - Substituir no index.html -->
+<section id="config" class="content-section">
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">Configurações do Sistema</h2>
+            <p class="section-subtitle">Configure as credenciais e preferências</p>
+        </div>
+
+    </div>
+    
+    <div class="config-grid">
+        <div class="config-card">
+            <div class="config-card-header">
+                <i class="bi bi-database-gear"></i>
+                <h3>Configurações GLPI</h3>
+            </div>
+            
+            <form id="form-glpi-config" class="form">
+                <div class="form-group">
+                    <label>URL da API GLPI</label>
+                    <input type="url" id="config-glpi-url" placeholder="https://seu-glpi.com/apirest.php" required>
+                    <small>URL completa da API incluindo /apirest.php</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>App Token</label>
+                    <input type="text" id="config-glpi-token" placeholder="Token da aplicação" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Login de Usuário</label>
+                    <input type="text" id="config-glpi-login" placeholder="Usuário do GLPI" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Senha</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="config-glpi-password" placeholder="Senha do usuário" required>
+                        <button type="button" class="toggle-password" onclick="toggleConfigPassword()">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label style="margin-bottom: var(--space-4); display: block;">Automações do Sistema</label>
+                    
+                    <div class="toggle-switch">
+                        <div>
+                            <label for="config-automacao-categoria" style="display: block; margin-bottom: 4px;">Automação de Categoria</label>
+                            <small style="color: var(--neutral-500); font-size: 0.8125rem;">Categorizar tickets automaticamente baseado em padrões</small>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="config-automacao-categoria">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="toggle-switch">
+                        <div>
+                            <label for="config-automacao-encaminhamento" style="display: block; margin-bottom: 4px;">Automação de Encaminhamento</label>
+                            <small style="color: var(--neutral-500); font-size: 0.8125rem;">Atribuir tickets automaticamente aos técnicos disponíveis</small>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="config-automacao-encaminhamento">
+                            <span class="slider"></span>
+                        </label>
                     </div>
                 </div>
                 
-                <div class="config-grid">
-                    <div class="config-card">
-                        <div class="config-card-header">
-                            <i class="bi bi-database-gear"></i>
-                            <h3>Configurações GLPI</h3>
-                        </div>
-                        
-                        <form id="form-glpi-config" class="form">
-                            <div class="form-group">
-                                <label>URL da API GLPI</label>
-                                <input type="url" id="config-glpi-url" placeholder="https://seu-glpi.com/apirest.php" required>
-                                <small>URL completa da API incluindo /apirest.php</small>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>App Token</label>
-                                <input type="text" id="config-glpi-token" placeholder="Token da aplicação" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Login de Usuário</label>
-                                <input type="text" id="config-glpi-login" placeholder="Usuário do GLPI" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Senha</label>
-                                <div class="password-wrapper">
-                                    <input type="password" id="config-glpi-password" placeholder="Senha do usuário" required>
-                                    <button type="button" class="toggle-password" onclick="toggleConfigPassword()">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div class="config-actions">
-                                <button type="button" class="btn btn-secondary" id="btn-test-glpi">
-                                    <i class="bi bi-wifi"></i>
-                                    <span>Testar Conexão</span>
-                                </button>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-save"></i>
-                                    <span>Salvar</span>
-                                </button>
-                            </div>
-                        </form>
-                        
-                        <div id="config-status" class="config-status" style="display: none;">
-                            <i class="bi bi-check-circle"></i>
-                            <span></span>
-                        </div>
-                    </div>
-                    
-                    <div class="config-card">
-                        <div class="config-card-header">
-                            <i class="bi bi-shield-lock"></i>
-                            <h3>Alterar Senha</h3>
-                        </div>
-                        
-                        <form id="form-change-password" class="form">
-                            <div class="form-group">
-                                <label>Senha Atual</label>
-                                <input type="password" id="current-password" placeholder="Digite sua senha atual" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Nova Senha</label>
-                                <input type="password" id="new-password" placeholder="Digite a nova senha" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Confirmar Nova Senha</label>
-                                <input type="password" id="confirm-password" placeholder="Confirme a nova senha" required>
-                            </div>
-                            
-                            <button type="submit" class="btn btn-primary w-full">
-                                <i class="bi bi-key"></i>
-                                <span>Alterar Senha</span>
-                            </button>
-                        </form>
-                    </div>
+                <div class="config-actions">
+                    <button type="button" class="btn btn-secondary" id="btn-test-glpi">
+                        <i class="bi bi-wifi"></i>
+                        <span>Testar Conexão</span>
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i>
+                        <span>Salvar</span>
+                    </button>
                 </div>
-            </section>
+            </form>
+            
+            <div id="config-status" class="config-status" style="display: none;">
+                <i class="bi bi-check-circle"></i>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="config-card">
+            <div class="config-card-header">
+                <i class="bi bi-shield-lock"></i>
+                <h3>Alterar Senha</h3>
+            </div>
+            
+            <form id="form-change-password" class="form">
+                <div class="form-group">
+                    <label>Senha Atual</label>
+                    <input type="password" id="current-password" placeholder="Digite sua senha atual" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Nova Senha</label>
+                    <input type="password" id="new-password" placeholder="Digite a nova senha" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Confirmar Nova Senha</label>
+                    <input type="password" id="confirm-password" placeholder="Confirme a nova senha" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-full">
+                    <i class="bi bi-key"></i>
+                    <span>Alterar Senha</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
 
             <!-- GLPI Section -->
             <section id="glpi" class="content-section">

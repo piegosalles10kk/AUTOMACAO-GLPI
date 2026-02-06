@@ -13,6 +13,7 @@ const cargoRoutes = require('./src/routes/cargoRoutes');
 const entidadeRoutes = require('./src/routes/entidadeRoutes');
 const authRoutes = require('./src/routes/authRoutes');
 const configRoutes = require('./src/routes/configRoutes');
+const ticketsRoutes = require('./src/routes/ticketsRoutes');
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use('/api/competencias', competenciaRoutes);
 app.use('/api/glpi', glpiRoutes);
 app.use('/api/cargos', cargoRoutes);
 app.use('/api/entidades-config', entidadeRoutes);
+app.use('/api/tickets', ticketsRoutes);
 
 // 5. Rota de Fallback
 app.use((req, res, next) => {

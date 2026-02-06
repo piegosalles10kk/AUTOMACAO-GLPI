@@ -109,13 +109,17 @@ async function loadGlpiConfig() {
             document.getElementById('config-glpi-token').value = config.glpi_app_token || '';
             document.getElementById('config-glpi-login').value = config.glpi_user_login || '';
             document.getElementById('config-glpi-password').value = config.glpi_user_password || '';
+            
+            // Carregar toggles de automação
+            document.getElementById('config-automacao-categoria').checked = config.automacaoCategoria || false;
+            document.getElementById('config-automacao-encaminhamento').checked = config.automacaoEncaminhamento || false;
         }
     } catch (error) {
         console.error('Erro ao carregar configurações:', error);
     }
 }
 
-// Salvar configurações GLPI
+// Salvar configurações GLPI (VERSÃO ATUALIZADA)
 async function saveGlpiConfig(e) {
     e.preventDefault();
     
@@ -123,7 +127,9 @@ async function saveGlpiConfig(e) {
         glpi_url: document.getElementById('config-glpi-url').value.trim(),
         glpi_app_token: document.getElementById('config-glpi-token').value.trim(),
         glpi_user_login: document.getElementById('config-glpi-login').value.trim(),
-        glpi_user_password: document.getElementById('config-glpi-password').value
+        glpi_user_password: document.getElementById('config-glpi-password').value,
+        automacaoCategoria: document.getElementById('config-automacao-categoria').checked,
+        automacaoEncaminhamento: document.getElementById('config-automacao-encaminhamento').checked
     };
     
     try {

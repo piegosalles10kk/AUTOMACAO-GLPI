@@ -27,6 +27,20 @@ const ConfigSchema = new mongoose.Schema({
     ativo: { 
         type: Boolean, 
         default: true 
+    },
+    // Novos campos de automação
+    automacaoCategoria: {
+        type: Boolean,
+        default: false
+    },
+    automacaoEncaminhamento: {
+        type: Boolean,
+        default: false
+    },
+    // Array de IDs dos técnicos para o dashboard
+    tecnicosDashboard: {
+        type: [Number],
+        default: []
     }
 }, { versionKey: false, timestamps: true });
 

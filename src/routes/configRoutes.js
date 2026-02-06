@@ -12,4 +12,10 @@ router.get('/glpi', configController.getGlpiConfig);
 // Testar conexão GLPI
 router.post('/glpi/test', configController.testGlpiConnection);
 
+// Adicionar técnico ao dashboard
+router.post('/dashboard/technicians', configController.addTechnicianToDashboard);
+
+// Remover técnico do dashboard
+router.delete('/dashboard/technicians/:technicianId', configController.removeTechnicianFromDashboard);
+
 module.exports = router;
